@@ -26,7 +26,14 @@ Python 3.9+. The only runtime dependency is `requests`.
 
 ## 📚 Documentation
 
-Full documentation lives in **[`docs/`](docs/README.md)**, organized by topic:
+**[Read the documentation site →](https://claude.ai/artifact/Qy3QSk8i5sB376dQtPoF1a)** · or browse the Markdown pages below.
+
+| | |
+|---|---|
+| **Hosted site** | https://claude.ai/artifact/Qy3QSk8i5sB376dQtPoF1a |
+| **In this repo** | [`docs/`](docs/README.md) |
+
+Organized by topic:
 
 | | |
 |---|---|

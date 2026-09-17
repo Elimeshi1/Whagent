@@ -2,6 +2,8 @@
 
 A Python library for the [WhatsApp Agent Platform](https://www.whatsapp.com/developer/WhatsApp-Agent-Platform-Developer-Manual.pdf) API (`https://api.whatsapp.com/agent/v1`), covering version 1 of the developer manual.
 
+> Prefer a browsable version? The same material is published as a [documentation site](https://claude.ai/artifact/Qy3QSk8i5sB376dQtPoF1a) — [its source](site/README.md) lives in this repo too.
+
 ## Start here
 
 | Page | What it covers |
@@ -43,4 +45,4 @@ A Python library for the [WhatsApp Agent Platform](https://www.whatsapp.com/deve
 
 ---
 
-Source: [github.com/Elimeshi1/Whagent](https://github.com/Elimeshi1/Whagent) · [Examples](../examples)
+Source: [github.com/Elimeshi1/Whagent](https://github.com/Elimeshi1/Whagent) · [Examples](../examples) · [Hosted site](https://claude.ai/artifact/Qy3QSk8i5sB376dQtPoF1a)

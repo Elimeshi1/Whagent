@@ -1,0 +1,2350 @@
+<title>whagent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500;600&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+
+<style>
+:root {
+  --bg: #F5F8F6;
+  --surface: #FFFFFF;
+  --surface-2: #EBF1ED;
+  --text: #13201A;
+  --muted: #5A6B62;
+  --faint: #8A9990;
+  --border: #D9E3DC;
+  --border-strong: #C2D1C8;
+  --accent: #0B7A4B;
+  --accent-hover: #095F3A;
+  --accent-soft: #E1F2E8;
+  --code-bg: #0E1815;
+  --code-text: #D9E5DE;
+  --code-border: #1D2C25;
+  --warn: #8A5300;
+  --warn-soft: #FBF0DC;
+  --danger: #9B2C2C;
+  --danger-soft: #FAE8E6;
+  --shadow: 0 1px 2px rgba(19, 32, 26, .05), 0 8px 24px -12px rgba(19, 32, 26, .18);
+
+  --font-display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Public Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  --hl-key: #F2A65A;
+  --hl-str: #8ED6A4;
+  --hl-num: #9FC7F0;
+  --hl-com: #6B7F76;
+  --hl-fn: #E4D89A;
+  --hl-attr: #C4AEE8;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0C1310;
+    --surface: #121A16;
+    --surface-2: #17211C;
+    --text: #E6EDE8;
+    --muted: #94A69C;
+    --faint: #6E7F76;
+    --border: #212E27;
+    --border-strong: #2E3E35;
+    --accent: #45D690;
+    --accent-hover: #6FE3AB;
+    --accent-soft: #14261D;
+    --code-bg: #080D0B;
+    --code-text: #D6E3DB;
+    --code-border: #1B2822;
+    --warn: #E0A84D;
+    --warn-soft: #221A0C;
+    --danger: #EC8A82;
+    --danger-soft: #241310;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px -12px rgba(0, 0, 0, .6);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #0C1310;
+  --surface: #121A16;
+  --surface-2: #17211C;
+  --text: #E6EDE8;
+  --muted: #94A69C;
+  --faint: #6E7F76;
+  --border: #212E27;
+  --border-strong: #2E3E35;
+  --accent: #45D690;
+  --accent-hover: #6FE3AB;
+  --accent-soft: #14261D;
+  --code-bg: #080D0B;
+  --code-text: #D6E3DB;
+  --code-border: #1B2822;
+  --warn: #E0A84D;
+  --warn-soft: #221A0C;
+  --danger: #EC8A82;
+  --danger-soft: #241310;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px -12px rgba(0, 0, 0, .6);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- layout ---------- */
+
+.topbar {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 20px;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+
+.brand {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  text-decoration: none;
+  color: var(--text);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 19px;
+  letter-spacing: -.02em;
+}
+.brand .dot { color: var(--accent); }
+
+.pill {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.topbar .spacer { flex: 1; }
+
+.search {
+  position: relative;
+  width: min(260px, 42vw);
+  min-width: 0;
+}
+.search input {
+  width: 100%;
+  min-width: 0;
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 10px 6px 30px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.search input::placeholder { color: var(--faint); }
+.search input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-color: transparent;
+}
+.search svg {
+  position: absolute;
+  left: 9px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  color: var(--faint);
+  pointer-events: none;
+}
+
+.iconbtn {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+}
+.iconbtn:hover { color: var(--accent); border-color: var(--border-strong); }
+.iconbtn svg { width: 16px; height: 16px; }
+#navToggle { display: none; }
+
+.shell {
+  display: grid;
+  grid-template-columns: 236px minmax(0, 1fr) 190px;
+  gap: 36px;
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 0 20px 80px;
+}
+
+/* ---------- sidebar ---------- */
+
+.sidebar {
+  position: sticky;
+  top: calc(env(safe-area-inset-top, 0px) + 54px);
+  align-self: start;
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
+  padding: 26px 0 40px;
+  font-size: 13.5px;
+}
+.navgroup + .navgroup { margin-top: 22px; }
+.navgroup > h3 {
+  margin: 0 0 7px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.navgroup ul { list-style: none; margin: 0; padding: 0; }
+.navgroup a {
+  display: block;
+  padding: 4px 10px;
+  margin-left: -10px;
+  border-radius: 7px;
+  color: var(--muted);
+  text-decoration: none;
+  border-left: 2px solid transparent;
+}
+.navgroup a:hover { color: var(--text); background: var(--surface-2); }
+.navgroup a.active {
+  color: var(--accent);
+  font-weight: 600;
+  background: var(--accent-soft);
+}
+.navgroup a .hint {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--faint);
+}
+.navgroup a.active .hint { color: var(--accent); opacity: .8; }
+.nohits {
+  padding: 8px 0;
+  color: var(--faint);
+  font-size: 13px;
+}
+
+/* ---------- main ---------- */
+
+main { padding: 34px 0 0; min-width: 0; }
+.page[hidden] { display: none !important; }
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: .1em;
+  color: var(--accent);
+  margin: 0 0 8px;
+}
+
+h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(30px, 5vw, 40px);
+  line-height: 1.12;
+  letter-spacing: -.028em;
+  margin: 0 0 12px;
+  text-wrap: balance;
+}
+h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 22px;
+  letter-spacing: -.016em;
+  line-height: 1.25;
+  margin: 46px 0 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  text-wrap: balance;
+  scroll-margin-top: 90px;
+}
+h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 16.5px;
+  letter-spacing: -.01em;
+  margin: 28px 0 8px;
+  scroll-margin-top: 90px;
+}
+.lede {
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin: 0 0 26px;
+  max-width: 62ch;
+}
+p, li { max-width: 68ch; }
+p { margin: 0 0 14px; }
+ul, ol { margin: 0 0 16px; padding-left: 20px; }
+li { margin-bottom: 5px; }
+li::marker { color: var(--faint); }
+strong { font-weight: 600; }
+
+a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:hover { color: var(--accent-hover); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+code {
+  font-family: var(--font-mono);
+  font-size: .87em;
+}
+p code, li code, td code, th code, .note code {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: .08em .34em;
+  color: var(--text);
+  white-space: nowrap;
+}
+pre {
+  margin: 0 0 18px;
+  padding: 14px 16px;
+  background: var(--code-bg);
+  color: var(--code-text);
+  border: 1px solid var(--code-border);
+  border-radius: 10px;
+  overflow-x: auto;
+  font-size: 13px;
+  line-height: 1.6;
+}
+pre code { font-family: var(--font-mono); white-space: pre; }
+.codelabel {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--faint);
+  margin-bottom: 5px;
+}
+
+/* syntax */
+.hljs-keyword, .hljs-built_in, .hljs-literal { color: var(--hl-key); }
+.hljs-string, .hljs-meta .hljs-string { color: var(--hl-str); }
+.hljs-number { color: var(--hl-num); }
+.hljs-comment { color: var(--hl-com); font-style: italic; }
+.hljs-title, .hljs-title.function_, .hljs-section { color: var(--hl-fn); }
+.hljs-attr, .hljs-params, .hljs-property { color: var(--hl-attr); }
+.hljs-meta { color: var(--hl-com); }
+.hljs-name, .hljs-selector-tag { color: var(--hl-key); }
+.hljs-variable, .hljs-template-variable { color: var(--code-text); }
+
+.tablewrap { overflow-x: auto; margin: 0 0 20px; }
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 13.5px;
+  min-width: 380px;
+}
+th, td {
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+  max-width: 44ch;
+}
+th {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--faint);
+  border-bottom: 1px solid var(--border-strong);
+  white-space: nowrap;
+}
+tbody tr:hover { background: var(--surface-2); }
+td:first-child { white-space: nowrap; }
+td.wrap, td.wrap:first-child { white-space: normal; }
+
+.note {
+  margin: 0 0 20px;
+  padding: 12px 15px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  background: var(--surface);
+  font-size: 14px;
+}
+.note :last-child { margin-bottom: 0; }
+.note .tag {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+.note.warn { border-left-color: var(--warn); background: var(--warn-soft); }
+.note.warn .tag { color: var(--warn); }
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px;
+  margin: 0 0 24px;
+}
+.card {
+  display: block;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  text-decoration: none;
+  color: inherit;
+}
+.card:hover { border-color: var(--accent); box-shadow: var(--shadow); }
+.card h4 {
+  margin: 0 0 3px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--accent);
+  letter-spacing: -.01em;
+}
+.card p { margin: 0; font-size: 13px; color: var(--muted); max-width: none; }
+
+.pagenav {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  margin-top: 56px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  font-size: 14px;
+}
+.pagenav a {
+  display: block;
+  max-width: 48%;
+  text-decoration: none;
+  color: var(--muted);
+}
+.pagenav a:hover { color: var(--accent); }
+.pagenav .dir {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.pagenav .ttl { color: var(--accent); font-weight: 500; }
+.pagenav .next { text-align: right; margin-left: auto; }
+
+/* ---------- on this page ---------- */
+
+.toc {
+  position: sticky;
+  top: calc(env(safe-area-inset-top, 0px) + 54px);
+  align-self: start;
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
+  padding: 38px 0 40px;
+  font-size: 12.5px;
+}
+.toc h3 {
+  margin: 0 0 8px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.toc ul { list-style: none; margin: 0; padding: 0; }
+.toc a {
+  display: block;
+  padding: 3px 0 3px 10px;
+  border-left: 2px solid var(--border);
+  color: var(--muted);
+  text-decoration: none;
+}
+.toc a:hover { color: var(--accent); border-left-color: var(--accent); }
+
+/* ---------- home ---------- */
+
+.hero {
+  padding: 8px 0 4px;
+}
+.hero h1 { font-size: clamp(34px, 6vw, 46px); }
+.herogrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 380px);
+  gap: 32px;
+  align-items: start;
+  margin-bottom: 8px;
+}
+.chat {
+  align-self: center;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  padding: 14px;
+  box-shadow: var(--shadow);
+  font-size: 13.5px;
+}
+.chat .row { display: flex; margin-bottom: 8px; }
+.chat .row.out { justify-content: flex-end; }
+.bubble {
+  max-width: 84%;
+  padding: 7px 11px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.row.out .bubble {
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.bubble .meta {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--faint);
+  margin-top: 3px;
+}
+.typing { display: inline-flex; gap: 3px; align-items: center; height: 10px; }
+.typing i {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--faint);
+  animation: blink 1.2s infinite;
+}
+.typing i:nth-child(2) { animation-delay: .2s; }
+.typing i:nth-child(3) { animation-delay: .4s; }
+@keyframes blink { 0%, 60%, 100% { opacity: .3 } 30% { opacity: 1 } }
+@media (prefers-reduced-motion: reduce) {
+  .typing i { animation: none; opacity: .6; }
+}
+
+.statgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
+  gap: 10px;
+  margin: 22px 0 8px;
+}
+.stat {
+  padding: 11px 13px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+}
+.stat b {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -.02em;
+  font-variant-numeric: tabular-nums;
+}
+.stat span {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.diagram { margin: 4px 0 22px; }
+.diagram svg { width: 100%; height: auto; max-width: 100%; }
+.diagram figcaption {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-top: 6px;
+  max-width: 62ch;
+}
+
+.footer {
+  border-top: 1px solid var(--border);
+  margin-top: 60px;
+  padding: 18px 20px 40px;
+  color: var(--faint);
+  font-size: 12.5px;
+  text-align: center;
+}
+.footer a { color: var(--muted); }
+
+/* ---------- responsive ---------- */
+
+@media (max-width: 1080px) {
+  .shell { grid-template-columns: 218px minmax(0, 1fr); gap: 28px; }
+  .toc { display: none; }
+  .herogrid { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 760px) {
+  .shell { grid-template-columns: minmax(0, 1fr); gap: 0; padding: 0 16px 60px; }
+  #navToggle { display: grid; }
+  .sidebar {
+    position: static;
+    max-height: none;
+    padding: 16px 0 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sidebar { display: none; }
+  body.nav-open .sidebar { display: block; }
+  .search { width: auto; flex: 1 1 auto; min-width: 0; }
+  .topbar { padding: 10px 14px; gap: 9px; }
+  .pill.full { display: none; }
+  .brand { font-size: 17px; }
+  main { padding-top: 24px; }
+  h2 { margin-top: 36px; }
+}
+</style>
+
+<header class="topbar">
+  <button class="iconbtn" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+  </button>
+  <a class="brand" href="#/overview"><span>whagent<span class="dot">.</span></span></a>
+  <span class="pill">v0.1.0</span>
+  <span class="pill full">Agent Platform v1</span>
+  <span class="spacer"></span>
+  <div class="search">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+    <input id="filter" type="search" placeholder="Filter topics" aria-label="Filter topics" autocomplete="off">
+  </div>
+  <button class="iconbtn" id="themeToggle" aria-label="Switch theme">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
+  </button>
+</header>
+
+<div class="shell">
+  <nav class="sidebar" id="sidebar" aria-label="Documentation"></nav>
+
+  <main id="main">
+
+<!-- ============================ OVERVIEW ============================ -->
+<article class="page" id="overview" data-title="Overview" data-group="Start" data-hint="what this is">
+  <div class="hero">
+    <p class="eyebrow">Python library</p>
+    <div class="herogrid">
+      <div>
+        <h1>A Python library for the WhatsApp Agent Platform</h1>
+        <p class="lede">Every endpoint of <code>api.whatsapp.com/agent/v1</code>, plus the parts you would otherwise write yourself: typed responses, offset tracking, retries with backoff, client-side rate limiting and validation against the documented caps.</p>
+        <pre><code class="language-python">from whagent import Agent
+
+agent = Agent("&lt;ACCESS_TOKEN&gt;")
+
+@agent.on_text
+def echo(ctx):
+    ctx.reply(f"You said: {ctx.text}")
+
+agent.run()</code></pre>
+      </div>
+      <div class="chat" aria-hidden="true">
+        <div class="row"><div class="bubble">Hello agent<span class="meta">user:5097…</span></div></div>
+        <div class="row out"><div class="bubble"><span class="typing"><i></i><i></i><i></i></span><span class="meta">typing_indicator</span></div></div>
+        <div class="row out"><div class="bubble">You said: Hello agent<span class="meta">wamid.HBg… · read</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="statgrid">
+    <div class="stat"><b>9</b><span>endpoints</span></div>
+    <div class="stat"><b>1</b><span>dependency</span></div>
+    <div class="stat"><b>120</b><span>tests</span></div>
+    <div class="stat"><b>3.9+</b><span>python</span></div>
+  </div>
+
+  <h2 id="ov-two-layers">Two layers</h2>
+  <p>Use whichever fits. <a href="#/agent">Agent</a> registers handlers and runs the poll loop for you; <a href="#/client">Client</a> is one method per endpoint, with nothing hidden.</p>
+
+  <div class="cards">
+    <a class="card" href="#/agent"><h4>Agent</h4><p>Decorators, a Context with reply and download helpers, offset persistence, deduplication.</p></a>
+    <a class="card" href="#/client"><h4>Client</h4><p>Send, poll, acknowledge, upload. Typed responses, retries, rate limiting, validation.</p></a>
+  </div>
+
+  <h2 id="ov-start">Where to start</h2>
+  <div class="cards">
+    <a class="card" href="#/getting-started"><h4>Getting started →</h4><p>Install, get an API token, run your first agent.</p></a>
+    <a class="card" href="#/concepts"><h4>Concepts</h4><p>Polling, identifiers, and what an agent is allowed to do.</p></a>
+    <a class="card" href="#/receiving"><h4>Receiving updates</h4><p>Offsets — the one thing worth understanding properly.</p></a>
+    <a class="card" href="#/recipes"><h4>Recipes</h4><p>Persistence, slow work, worker threads, shutdown, deployment.</p></a>
+  </div>
+
+  <h2 id="ov-install">Install</h2>
+  <pre><code class="language-bash">git clone https://github.com/Elimeshi1/Whagent.git
+cd Whagent
+pip install -e .</code></pre>
+  <p>Python 3.9 or newer. The only runtime dependency is <code>requests</code>.</p>
+
+  <div class="note">
+    <span class="tag">Scope</span>
+    <p>whagent is an independent library built against version 1 of the WhatsApp Agent Platform developer manual (August 25, 2026). It is not affiliated with or endorsed by WhatsApp.</p>
+  </div>
+</article>
+
+<!-- ============================ GETTING STARTED ============================ -->
+<article class="page" id="getting-started" data-title="Getting started" data-group="Start" data-hint="install · token · first agent" hidden>
+  <p class="eyebrow">Start</p>
+  <h1>Getting started</h1>
+  <p class="lede">From an empty directory to an agent answering messages in WhatsApp.</p>
+
+  <h2 id="gs-install">Install</h2>
+  <pre><code class="language-bash">git clone https://github.com/Elimeshi1/Whagent.git
+cd Whagent
+pip install -e .
+
+# with the test suite
+pip install -e ".[dev]"
+pytest</code></pre>
+  <p>Python 3.9+. The only runtime dependency is <a href="https://pypi.org/project/requests/">requests</a>.</p>
+
+  <h2 id="gs-token">Get an API token</h2>
+  <ol>
+    <li>Open WhatsApp → <strong>Settings → Agents → Create an agent</strong>.</li>
+    <li>Set a display name and an avatar.</li>
+    <li>Open the agent's chat → <strong>Chat info → API key</strong>.</li>
+    <li>Copy the key. That is your API token.</li>
+  </ol>
+  <p>Store it as a secret. It is an opaque string, so don't parse it. Rotating the token invalidates the old one, and reinstalling WhatsApp means regenerating it.</p>
+  <pre><code class="language-bash">export WHATSAPP_AGENT_TOKEN='...'</code></pre>
+
+  <div class="note warn">
+    <span class="tag">One conversation only</span>
+    <p>An agent may only exchange messages with <strong>its creator</strong>, and that account must have the agent API enabled. Messaging anyone else fails with <a href="#/errors">ForbiddenError</a>.</p>
+  </div>
+
+  <h2 id="gs-first">Your first agent</h2>
+  <pre><code class="language-python">import os
+from whagent import Agent
+
+agent = Agent(os.environ["WHATSAPP_AGENT_TOKEN"])
+
+@agent.on_text
+def echo(ctx):
+    ctx.reply(f"You said: {ctx.text}")
+
+agent.run()</code></pre>
+  <p>Run it, then write to your agent in WhatsApp. <code>run()</code> polls for updates, marks each message as read, shows a typing indicator while your handler runs, and dispatches the message to every handler that matches.</p>
+
+  <h2 id="gs-client">Sending without the Agent layer</h2>
+  <pre><code class="language-python">from whagent import Client
+
+with Client(os.environ["WHATSAPP_AGENT_TOKEN"]) as client:
+    result = client.send_text("user:50972923564215", "Hello from my agent!")
+    print(result.message_id)   # wamid.HBg...</code></pre>
+  <p>The recipient is a <a href="#/concepts">participant identifier</a> of the form <code>user:&lt;id&gt;</code> — take it from the <code>sender</code> of an inbound message and pass it back unchanged.</p>
+
+  <h2 id="gs-next">What to read next</h2>
+  <div class="cards">
+    <a class="card" href="#/concepts"><h4>Concepts</h4><p>What the platform guarantees, and what it doesn't.</p></a>
+    <a class="card" href="#/agent"><h4>Agent</h4><p>Every handler type and what Context gives you.</p></a>
+    <a class="card" href="#/receiving"><h4>Receiving updates</h4><p>Offsets, long polls and where to start.</p></a>
+  </div>
+</article>
+
+<!-- ============================ CONCEPTS ============================ -->
+<article class="page" id="concepts" data-title="Concepts" data-group="Start" data-hint="how the platform works" hidden>
+  <p class="eyebrow">Start</p>
+  <h1>Concepts</h1>
+  <p class="lede">What the platform is, in the six facts that shape how you write against it.</p>
+
+  <h2 id="c-poll">1. You poll; there is no webhook</h2>
+  <p>Inbound messages arrive through a <strong>long poll</strong> of <code>GET /agent/v1/updates</code>, not a callback to a server of yours. The connection stays open until something arrives or the timeout elapses (up to 25 seconds). An agent can therefore run from a laptop or a container with no inbound networking at all.</p>
+  <p>Run <strong>one poll at a time per agent</strong>. A second concurrent poll replaces the first, and the first fails with <code>PollReplacedError</code> (HTTP 409).</p>
+
+  <h2 id="c-offsets">2. Updates are a sequence you read with an offset</h2>
+  <p>Messages and delivery receipts share a single per-agent sequence. Each response carries a <code>next_offset</code> to pass to the next poll. Entries are retained for <strong>30 days</strong>, and polling does not consume them, so the same offset can be re-read.</p>
+  <p>The consequence: what your agent has already handled is <em>your</em> bookkeeping, not the platform's. See <a href="#/receiving">Receiving updates</a>.</p>
+
+  <h2 id="c-identifiers">3. Participant identifiers</h2>
+  <p>A participant identifier is written as <code>&lt;type&gt;:&lt;id&gt;</code>:</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Form</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>user:50972923564215</code></td><td class="wrap">a WhatsApp user</td></tr>
+      <tr><td><code>agent:123456789</code></td><td class="wrap">an agent</td></tr>
+    </tbody>
+  </table></div>
+  <p>Treat the whole string as <strong>opaque</strong>: compare it in full, never parse it, and never show it to a WhatsApp user.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Field</th><th>Endpoint</th></tr></thead>
+    <tbody>
+      <tr><td><code>messages[].from</code>, <code>contacts[].wa_id</code>, <code>statuses[].recipient_id</code></td><td class="wrap"><code>GET /updates</code></td></tr>
+      <tr><td><code>to</code></td><td class="wrap"><code>POST /messages</code> — <code>user:&lt;id&gt;</code> only</td></tr>
+      <tr><td><code>contacts[].wa_id</code>, <code>contacts[].input</code></td><td class="wrap"><code>POST /messages</code> response</td></tr>
+      <tr><td><code>messages[].context.from</code></td><td class="wrap">either form — read the prefix to tell them apart</td></tr>
+    </tbody>
+  </table></div>
+  <p>In this library: <code>message.sender</code>, <code>status.recipient_id</code>, <code>contact.wa_id</code> and <code>message.context.sender</code> (with <code>.from_agent</code> to tell which kind it is). Helpers: <code>whagent.participant_type(s)</code> and <code>whagent.is_user(s)</code>.</p>
+
+  <h3 id="c-stability">Identifiers are not stable</h3>
+  <p>An identifier refers to an <strong>account</strong>, not a person, and it can change — a new phone number, or an account deleted and re-registered, may produce a new one.</p>
+  <ul>
+    <li>Treat an identifier as a <strong>conversation key</strong>, not as a primary key for a user record.</li>
+    <li>An unrecognized identifier is a new conversation. A returning user whose identifier changed cannot be matched to their earlier one.</li>
+    <li>Prefer the <code>sender</code> of a <strong>recent</strong> inbound message over one you stored long ago; a user may no longer be reachable at the old one.</li>
+  </ul>
+
+  <h2 id="c-creator">4. An agent talks to its creator only</h2>
+  <p>The recipient of every outbound message must be the agent's creator, and that account must have the agent API enabled. Anything else is HTTP 403 / code <code>131005</code>. The same applies to read receipts: you may only mark messages the creator sent.</p>
+
+  <h2 id="c-wamid">5. Message ids</h2>
+  <p>Every message — inbound or outbound — has a <strong>wamid</strong>, an opaque id like <code>wamid.HBgONTA5...</code>. You use it to quote a message, mark one as read, match a delivery receipt to what you sent (<code>status.id</code>), and deduplicate when an offset replays.</p>
+
+  <h2 id="c-media">6. Media is a two-step affair</h2>
+  <p>You never attach bytes to a message. You upload the file, get a media id, and send a message that references it. Inbound media works the same way in reverse: the message carries a media id, and you fetch the bytes separately. Media expires after <strong>30 days</strong>.</p>
+  <p>See <a href="#/media">Media</a>. The library's <code>send_image(..., file=...)</code> does both steps for you.</p>
+</article>
+
+<!-- ============================ AGENT ============================ -->
+<article class="page" id="agent" data-title="Agent" data-group="The two layers" data-hint="handlers · context · loop" hidden>
+  <p class="eyebrow">Layer</p>
+  <h1>Agent</h1>
+  <p class="lede">The high-level layer: you register handlers, call <code>run()</code>, and it polls, acknowledges and dispatches.</p>
+
+  <pre><code class="language-python">from whagent import Agent
+
+agent = Agent("&lt;ACCESS_TOKEN&gt;")
+
+@agent.on_text
+def echo(ctx):
+    ctx.reply(f"You said: {ctx.text}")
+
+agent.run()</code></pre>
+
+  <h2 id="a-construction">Construction</h2>
+  <pre><code class="language-python">Agent(
+    token=None,              # or client=&lt;Client&gt;, but not both
+    client=None,
+    mark_read=True,          # mark each dispatched message as read
+    typing=True,             # show a typing indicator while a handler runs
+    start="new",             # "new" | "beginning" | an integer offset
+    offset_store=None,       # e.g. FileOffsetStore(".whagent-offset")
+    skip_own_replays=True,   # ignore a message id already handled in this process
+    **client_kwargs,         # forwarded to Client (timeout, rate_limit, ...)
+)</code></pre>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Argument</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><code>mark_read</code></td><td class="wrap">A read receipt is sent only for messages that at least one handler matches.</td></tr>
+      <tr><td><code>typing</code></td><td class="wrap">Implies <code>mark_read</code> — both travel in the same <code>POST /statuses</code> call.</td></tr>
+      <tr><td><code>start</code></td><td class="wrap">Where the first poll begins when nothing is stored. See <a href="#/receiving">where to start</a>.</td></tr>
+      <tr><td><code>offset_store</code></td><td class="wrap">Any object with <code>load()</code> and <code>save(offset)</code>.</td></tr>
+      <tr><td><code>skip_own_replays</code></td><td class="wrap">Guards against answering the same message twice when an offset replays.</td></tr>
+    </tbody>
+  </table></div>
+  <p>To share one client between an agent and your own code:</p>
+  <pre><code class="language-python">from whagent import Agent, Client
+
+client = Client(token, timeout=60)
+agent = Agent(client=client)</code></pre>
+
+  <h2 id="a-handlers">Handlers</h2>
+  <p>Every decorator can be used bare or with a filter.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Decorator</th><th>Fires on</th><th>Signature</th></tr></thead>
+    <tbody>
+      <tr><td><code>@agent.on_text</code></td><td class="wrap">text messages</td><td><code>f(ctx)</code></td></tr>
+      <tr><td><code>@agent.on_text(r"^/start")</code></td><td class="wrap">text matching a regex (searched, case-insensitive)</td><td><code>f(ctx)</code></td></tr>
+      <tr><td><code>@agent.on_message</code></td><td class="wrap">every message</td><td><code>f(ctx)</code></td></tr>
+      <tr><td><code>@agent.on_message("image")</code></td><td class="wrap">one type</td><td><code>f(ctx)</code></td></tr>
+      <tr><td><code>@agent.on_message(["audio", "video"])</code></td><td class="wrap">several types</td><td><code>f(ctx)</code></td></tr>
+      <tr><td><code>@agent.on_message(pattern=r"invoice")</code></td><td class="wrap">text body or caption matching a regex</td><td><code>f(ctx)</code></td></tr>
+      <tr><td><code>@agent.on_media</code></td><td class="wrap">image, audio, video, document, sticker</td><td><code>f(ctx)</code></td></tr>
+      <tr><td><code>@agent.on_reaction</code></td><td class="wrap">reactions (receive-only)</td><td><code>f(ctx)</code></td></tr>
+      <tr><td><code>@agent.on_status</code></td><td class="wrap">delivery and read receipts</td><td><code>f(status)</code></td></tr>
+      <tr><td><code>@agent.on_update</code></td><td class="wrap">each raw Update, before anything else</td><td><code>f(update)</code></td></tr>
+      <tr><td><code>@agent.on_error</code></td><td class="wrap">an exception from any handler</td><td><code>f(exc, ctx)</code></td></tr>
+    </tbody>
+  </table></div>
+  <p>Handlers are <strong>not</strong> mutually exclusive: every matching handler runs, in registration order.</p>
+  <pre><code class="language-python">@agent.on_text(r"^/help")
+def help_command(ctx):
+    ctx.reply("Send me a photo and I'll tell you how big it is.")
+
+@agent.on_text
+def everything_else(ctx):
+    if ctx.text.startswith("/"):
+        return          # already handled above
+    ctx.reply("Try /help")</code></pre>
+  <p>Registering an unknown message type raises <code>ValidationError</code> at import time rather than failing silently at runtime.</p>
+
+  <h3 id="a-handler-errors">Errors in handlers</h3>
+  <p>An exception inside a handler never stops the loop. With an <code>on_error</code> handler it is passed to it; without one it is logged through the <code>whagent</code> logger.</p>
+
+  <h2 id="a-context">Context</h2>
+  <p>What a message handler receives.</p>
+  <h3 id="a-context-read">Reading</h3>
+  <div class="tablewrap"><table>
+    <tbody>
+      <tr><td><code>ctx.message</code></td><td class="wrap">the full <a href="#/models">Message</a></td></tr>
+      <tr><td><code>ctx.text</code></td><td class="wrap">text body, or the <strong>caption</strong> of a media message</td></tr>
+      <tr><td><code>ctx.type</code></td><td class="wrap"><code>"text"</code>, <code>"image"</code>, <code>"reaction"</code>, …</td></tr>
+      <tr><td><code>ctx.sender</code></td><td class="wrap"><code>user:&lt;id&gt;</code> — pass back as a recipient unchanged</td></tr>
+      <tr><td><code>ctx.profile_name</code></td><td class="wrap">display name, when the platform supplied one, else <code>None</code></td></tr>
+      <tr><td><code>ctx.update</code></td><td class="wrap">the Update this message arrived in</td></tr>
+      <tr><td><code>ctx.client</code></td><td class="wrap">the underlying <a href="#/client">Client</a></td></tr>
+    </tbody>
+  </table></div>
+  <h3 id="a-context-respond">Responding</h3>
+  <div class="tablewrap"><table>
+    <tbody>
+      <tr><td><code>ctx.reply(body, quote=False)</code></td><td class="wrap">send text back</td></tr>
+      <tr><td><code>ctx.reply_image(...)</code> and <code>_video</code>, <code>_audio</code>, <code>_document</code>, <code>_sticker</code></td><td class="wrap"><code>file=</code> a path or bytes (uploaded for you), or <code>media_id=</code></td></tr>
+      <tr><td><code>ctx.download(dest=None)</code></td><td class="wrap">this message's media, as bytes or written to <code>dest</code></td></tr>
+      <tr><td><code>ctx.mark_read(typing=False)</code></td><td class="wrap">send a receipt by hand</td></tr>
+      <tr><td><code>ctx.typing()</code></td><td class="wrap">refresh the typing indicator (it clears after 25 s)</td></tr>
+    </tbody>
+  </table></div>
+  <pre><code class="language-python">@agent.on_text
+def handle(ctx):
+    ctx.reply("got it", quote=True)      # quotes the incoming message</code></pre>
+  <p>Every <code>reply_*</code> accepts the same keyword arguments as the matching <code>Client.send_*</code> — see <a href="#/sending">Sending messages</a>.</p>
+
+  <h2 id="a-run">Running</h2>
+  <pre><code class="language-python">agent.run(
+    offset=None,      # overrides start= for this run
+    limit=50,         # entries per poll, 1-100
+    timeout=15,       # long-poll seconds, 0-25
+    max_polls=None,   # stop after N polls (useful in tests)
+    stop=None,        # callable checked before each poll; True ends the loop
+)</code></pre>
+  <p><code>run()</code> blocks. <kbd>Ctrl-C</kbd> ends it cleanly. To stop it from another thread, see <a href="#/recipes">graceful shutdown</a>.</p>
+  <p>Dispatching an update by hand — for tests, or to drive the loop yourself:</p>
+  <pre><code class="language-python">update = agent.client.get_updates(offset=0)
+if update:
+    agent.dispatch(update)</code></pre>
+
+  <h2 id="a-offsets">Offset persistence</h2>
+  <p>Without a store, a restart uses <code>start=</code> again: with <code>"new"</code> you lose whatever arrived while the process was down.</p>
+  <pre><code class="language-python">from whagent import Agent, FileOffsetStore
+
+agent = Agent(token, offset_store=FileOffsetStore(".whagent-offset"))</code></pre>
+  <p>Any object with <code>load() -&gt; int | None</code> and <code>save(offset)</code> works — Redis, a database row, a config file:</p>
+  <pre><code class="language-python">class RedisOffsetStore:
+    def __init__(self, redis, key="whagent:offset"):
+        self.redis, self.key = redis, key
+
+    def load(self):
+        value = self.redis.get(self.key)
+        return int(value) if value else None
+
+    def save(self, offset):
+        self.redis.set(self.key, offset)</code></pre>
+  <p>Store the offset as a <strong>64-bit signed integer</strong> and pass it back unchanged — never compute one of your own.</p>
+</article>
+
+<!-- ============================ CLIENT ============================ -->
+<article class="page" id="client" data-title="Client" data-group="The two layers" data-hint="one method per endpoint" hidden>
+  <p class="eyebrow">Layer</p>
+  <h1>Client</h1>
+  <p class="lede">One method per endpoint, plus the plumbing: authentication, retries, rate limiting, local validation and typed responses.</p>
+
+  <pre><code class="language-python">from whagent import Client
+
+with Client("&lt;ACCESS_TOKEN&gt;") as client:
+    client.send_text("user:50972923564215", "Hello!")</code></pre>
+
+  <h2 id="cl-construction">Construction</h2>
+  <pre><code class="language-python">Client(
+    token,
+    base_url="https://api.whatsapp.com/agent/v1",
+    timeout=30.0,
+    max_retries=3,
+    backoff_base=0.5,
+    backoff_max=30.0,
+    rate_limit=True,
+    retry_send_on_server_error=False,
+    validate=True,
+    session=None,
+    user_agent=None,
+)</code></pre>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Argument</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><code>token</code></td><td class="wrap">The agent's API token. Sent as <code>Authorization: Bearer &lt;token&gt;</code>.</td></tr>
+      <tr><td><code>base_url</code></td><td class="wrap">Override the API root — useful for tests and proxies.</td></tr>
+      <tr><td><code>timeout</code></td><td class="wrap">Read timeout in seconds. Polls extend it past the long-poll window automatically, so an ordinary delay never looks like a failure.</td></tr>
+      <tr><td><code>max_retries</code></td><td class="wrap">Retries after a <em>retryable</em> failure. See <a href="#/errors">retries</a>.</td></tr>
+      <tr><td><code>backoff_base</code>, <code>backoff_max</code></td><td class="wrap">Exponential backoff bounds, in seconds. Jitter is added.</td></tr>
+      <tr><td><code>rate_limit</code></td><td class="wrap">Pace requests to stay inside the documented caps instead of collecting 429s.</td></tr>
+      <tr><td><code>retry_send_on_server_error</code></td><td class="wrap"><strong>Off by default.</strong> A 500 on a send leaves delivery unknown, so a retry may send twice.</td></tr>
+      <tr><td><code>validate</code></td><td class="wrap">Local checks on recipients, length caps, MIME types and media sizes before a request leaves.</td></tr>
+      <tr><td><code>session</code></td><td class="wrap">Bring your own <code>requests.Session</code> for connection reuse, proxies or custom TLS.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="cl-methods">Methods</h2>
+  <h3 id="cl-m-messages">Messages — <a href="#/sending">POST /messages</a></h3>
+  <div class="tablewrap"><table>
+    <tbody>
+      <tr><td><code>send_text(to, body, preview_url=False, reply_to=None)</code></td><td class="wrap">→ <a href="#/models">SendResult</a></td></tr>
+      <tr><td><code>send_image(to, media_id= | file=, mime_type=None, caption=None, reply_to=None)</code></td><td class="wrap"></td></tr>
+      <tr><td><code>send_video(...)</code>, <code>send_audio(...)</code>, <code>send_sticker(...)</code></td><td class="wrap"></td></tr>
+      <tr><td><code>send_document(..., filename=None)</code></td><td class="wrap"></td></tr>
+      <tr><td><code>send_message(to, type, payload, reply_to=None)</code></td><td class="wrap">any payload shape</td></tr>
+      <tr><td><code>reply(message, body, **kwargs)</code></td><td class="wrap">text back to a Message's sender, quoting it</td></tr>
+    </tbody>
+  </table></div>
+  <h3 id="cl-m-updates">Updates — <a href="#/receiving">GET /updates</a></h3>
+  <div class="tablewrap"><table>
+    <tbody>
+      <tr><td><code>get_updates(offset=None, limit=50, timeout=15)</code></td><td class="wrap">→ Update, or <code>None</code> on a 204</td></tr>
+      <tr><td><code>poll_updates(offset=None, limit=50, timeout=15, on_offset=None, max_polls=None, stop=None)</code></td><td class="wrap">generator of non-empty Updates, tracking the offset</td></tr>
+    </tbody>
+  </table></div>
+  <h3 id="cl-m-statuses">Receipts — <a href="#/receipts">POST /statuses</a></h3>
+  <div class="tablewrap"><table>
+    <tbody>
+      <tr><td><code>mark_read(message_id, typing=False)</code></td><td class="wrap">→ <code>bool</code></td></tr>
+      <tr><td><code>send_typing(message_id)</code></td><td class="wrap">mark read <strong>and</strong> show the indicator</td></tr>
+    </tbody>
+  </table></div>
+  <h3 id="cl-m-media">Media — <a href="#/media">POST / GET / DELETE /media</a></h3>
+  <div class="tablewrap"><table>
+    <tbody>
+      <tr><td><code>upload_media(file, mime_type=None, filename=None)</code></td><td class="wrap">→ media id</td></tr>
+      <tr><td><code>get_media(media_id)</code></td><td class="wrap">→ Media metadata</td></tr>
+      <tr><td><code>download_media(media_id, dest=None)</code></td><td class="wrap">→ bytes, or the destination it wrote to</td></tr>
+      <tr><td><code>download_url(url, dest=None)</code></td><td class="wrap">fetch a media URL directly, authenticated</td></tr>
+      <tr><td><code>delete_media(media_id)</code></td><td class="wrap">→ <code>bool</code></td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="cl-lifecycle">Lifecycle</h2>
+  <p><code>Client</code> opens a <code>requests.Session</code> and reuses the connection. Close it when you're done — or use the context manager, which closes only a session the client created. A session you passed in is left open for you to manage.</p>
+
+  <h2 id="cl-threads">Threads</h2>
+  <p>A <code>Client</code> is safe to share across threads: <code>requests.Session</code> is thread-safe for this usage, and the rate limiter takes a lock. Two rules from the platform still apply:</p>
+  <ul>
+    <li><strong>One poll at a time per agent</strong> — a second concurrent <code>get_updates</code> makes the first fail with <code>PollReplacedError</code>.</li>
+    <li><strong>No concurrent sends to the same recipient</strong> — ordering between them is not guaranteed.</li>
+  </ul>
+  <p>See <a href="#/recipes">handling messages off the poll loop</a>.</p>
+
+  <h2 id="cl-off">Turning the helpers off</h2>
+  <p>The library validates before sending because a round trip to learn that a caption is 1025 characters is a slow way to find out. If you would rather see exactly what the API says:</p>
+  <pre><code class="language-python">client = Client(token, validate=False, rate_limit=False, max_retries=0)</code></pre>
+</article>
+
+<!-- ============================ SENDING ============================ -->
+<article class="page" id="sending" data-title="Sending messages" data-group="Endpoints" data-hint="POST /messages" hidden>
+  <p class="eyebrow">POST /agent/v1/messages</p>
+  <h1>Sending messages</h1>
+  <p class="lede">An agent can send <code>text</code>, <code>image</code>, <code>audio</code>, <code>video</code>, <code>document</code> and <code>sticker</code>. Reactions are receive-only.</p>
+
+  <pre><code class="language-python">result = client.send_text("user:50972923564215", "Hello! How can I help you?")
+result.message_id     # "wamid.HBg..." — record it; receipts refer to it
+result.wa_id          # "user:50972923564215"</code></pre>
+
+  <h2 id="s-recipient">The recipient</h2>
+  <p><code>to</code> must be <code>user:&lt;id&gt;</code> — a WhatsApp user, and the agent's creator. An <code>agent:&lt;id&gt;</code>, a bare phone number or any other shape is rejected (HTTP 400, code <code>131009</code>); the library catches these before the request leaves.</p>
+  <pre><code class="language-python">client.send_text(message.sender, "...")   # straight back where it came from</code></pre>
+
+  <h2 id="s-text">Text</h2>
+  <pre><code class="language-python">client.send_text(to, "Hello", preview_url=True, reply_to="wamid.HBg...")</code></pre>
+  <div class="tablewrap"><table>
+    <tbody>
+      <tr><td><code>body</code></td><td class="wrap">up to <strong>4096 characters</strong></td></tr>
+      <tr><td><code>preview_url</code></td><td class="wrap">render a preview for the first URL in the body; it must begin with <code>http://</code> or <code>https://</code></td></tr>
+      <tr><td><code>reply_to</code></td><td class="wrap">wamid of a message to quote</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="s-media">Media</h2>
+  <p>Each media send takes <strong>either</strong> a <code>media_id</code> from an earlier upload, <strong>or</strong> a <code>file</code> that the library uploads first:</p>
+  <pre><code class="language-python"># upload once, send many times
+media_id = client.upload_media("logo.png")
+client.send_image(to, media_id=media_id, caption="our logo")
+
+# or in one call
+client.send_image(to, file="cat.jpg", caption="look at this")
+client.send_image(to, file=open("cat.jpg", "rb"))
+client.send_image(to, file=photo_bytes, mime_type="image/jpeg")</code></pre>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Method</th><th>Caption</th><th>Filename</th></tr></thead>
+    <tbody>
+      <tr><td><code>send_image</code></td><td>≤1024 chars</td><td>—</td></tr>
+      <tr><td><code>send_video</code></td><td>≤1024 chars</td><td>—</td></tr>
+      <tr><td><code>send_document</code></td><td>≤1024 chars</td><td>yes</td></tr>
+      <tr><td><code>send_audio</code></td><td>—</td><td>—</td></tr>
+      <tr><td><code>send_sticker</code></td><td>—</td><td>—</td></tr>
+    </tbody>
+  </table></div>
+  <pre><code class="language-python">client.send_document(to, file="invoice.pdf")                    # filename: invoice.pdf
+client.send_document(to, media_id=mid, filename="invoice.pdf")  # set it yourself</code></pre>
+  <p>Formats, size caps and codec constraints are in <a href="#/limits">Limits and formats</a>. Uploading is covered in <a href="#/media">Media</a>.</p>
+
+  <h2 id="s-quote">Quoting a message</h2>
+  <pre><code class="language-python">client.send_text(to, "On it", reply_to=message.id)
+client.reply(message, "On it")          # same thing, to the message's sender
+ctx.reply("On it", quote=True)          # from an Agent handler</code></pre>
+  <p>The wamid must come from this conversation — an id from <code>GET /updates</code>, or one you got back from a send. Anything else is a 400.</p>
+
+  <h2 id="s-raw">Sending a type the library doesn't know</h2>
+  <pre><code class="language-python">client.send_message(to, "text", {"body": "Hello", "preview_url": True})</code></pre>
+  <p><code>send_message</code> takes any payload, so a type the platform adds later needs no library upgrade.</p>
+
+  <h2 id="s-ordering">Ordering</h2>
+  <div class="note warn">
+    <span class="tag">Do not send concurrently to one recipient</span>
+    <p>The order in which concurrent sends arrive is not guaranteed. Send sequentially, or serialize per recipient — see <a href="#/recipes">Recipes</a>.</p>
+  </div>
+
+  <h2 id="s-failures">What can go wrong</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Situation</th><th>Result</th></tr></thead>
+    <tbody>
+      <tr><td class="wrap">Body over 4096, or caption over 1024</td><td class="wrap"><code>ValidationError</code> locally; 400 + code <code>100</code> from the API</td></tr>
+      <tr><td class="wrap">Payload object missing for the declared type</td><td class="wrap">400</td></tr>
+      <tr><td class="wrap">Media id missing, unknown or expired</td><td class="wrap">400 + code <code>131009</code></td></tr>
+      <tr><td class="wrap"><code>to</code> malformed, or an <code>agent:</code> id</td><td class="wrap">400 + code <code>131009</code></td></tr>
+      <tr><td class="wrap"><code>type</code> is <code>reaction</code></td><td class="wrap"><code>ValidationError</code> locally; 400 from the API</td></tr>
+      <tr><td class="wrap">Recipient is not the agent's creator</td><td class="wrap">403 + code <code>131005</code></td></tr>
+      <tr><td class="wrap">More than 12 sends per minute</td><td class="wrap">429 — <a href="#/rate-limits">paced for you by default</a></td></tr>
+      <tr><td class="wrap">Not accepted for delivery</td><td class="wrap">503 + code <code>131016</code> — retried automatically</td></tr>
+    </tbody>
+  </table></div>
+  <p>Fields in payload objects other than the one being sent are still validated, so a stray over-long caption in an unused object can fail the request.</p>
+
+  <h2 id="s-retry">Retrying a send</h2>
+  <p>This is the one place where "just retry" is wrong. What to do depends on what came back:</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Response</th><th>Meaning</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td><code>2xx</code></td><td class="wrap">Sent.</td><td class="wrap">Record <code>message_id</code>. Never retry.</td></tr>
+      <tr><td><code>4xx</code></td><td class="wrap">Not sent.</td><td class="wrap">Fix the request or the token. A repeat fails the same way.</td></tr>
+      <tr><td><code>429</code></td><td class="wrap">Not sent.</td><td class="wrap">Back off and retry — <strong>the library does this</strong>.</td></tr>
+      <tr><td><code>503</code> · <code>131016</code></td><td class="wrap">Not accepted for delivery, so not sent.</td><td class="wrap">Back off and retry — <strong>the library does this</strong>.</td></tr>
+      <tr><td><code>500</code>, reset, timeout</td><td class="wrap"><strong>Unknown</strong> whether it was sent.</td><td class="wrap">Decide in advance. A retry may deliver twice.</td></tr>
+    </tbody>
+  </table></div>
+  <p>The library therefore does <strong>not</strong> retry a send after a 500 or a dropped connection. Opt in when a duplicate is cheaper than a loss:</p>
+  <pre><code class="language-python">client = Client(token, retry_send_on_server_error=True)</code></pre>
+  <p>A long read timeout is the cheaper protection — it keeps an ordinary delay from turning into an unknown outcome. <code>Client(timeout=...)</code> sets it.</p>
+</article>
+
+<!-- ============================ RECEIVING ============================ -->
+<article class="page" id="receiving" data-title="Receiving updates" data-group="Endpoints" data-hint="GET /updates · offsets" hidden>
+  <p class="eyebrow">GET /agent/v1/updates</p>
+  <h1>Receiving updates</h1>
+  <p class="lede">Inbound messages and delivery receipts arrive through a long poll. The connection stays open until something arrives or the timeout elapses.</p>
+
+  <pre><code class="language-python">for update in client.poll_updates():
+    for message in update.messages:
+        print(message.sender, message.text)
+    for status in update.statuses:
+        print(status.id, status.status)</code></pre>
+  <p><code>poll_updates()</code> handles offsets, empty polls and backoff. <code>get_updates()</code> is the single request underneath it.</p>
+
+  <h2 id="r-request">One request</h2>
+  <pre><code class="language-python">update = client.get_updates(offset=1287, limit=50, timeout=15)</code></pre>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Argument</th><th>Default</th><th>Range</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>offset</code></td><td>head at request time</td><td>≥ 0, or omitted</td><td class="wrap">Where to read from</td></tr>
+      <tr><td><code>limit</code></td><td>50</td><td>≤ 100</td><td class="wrap">Max entries in the response</td></tr>
+      <tr><td><code>timeout</code></td><td>15</td><td>0–25 s</td><td class="wrap">How long to hold the connection open</td></tr>
+    </tbody>
+  </table></div>
+  <p>Out-of-range values are adjusted rather than rejected; the library clamps them before sending. Only a non-integer is a 400. The return value is an <a href="#/models">Update</a>, or <strong><code>None</code></strong> when the timeout elapsed with nothing to deliver (HTTP 204).</p>
+
+  <h2 id="r-offsets">Offsets</h2>
+  <p>Messages and statuses share <strong>one per-agent sequence</strong>. Each 200 response carries <code>next_offset</code>; pass it to the next poll, unchanged.</p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 700 250" role="img" aria-label="Three polls reading a sequence: the first reads entries 5 to 7 and returns next_offset 8, the second times out with 204 and no next_offset, the third reads entry 8 from the same offset.">
+      <text x="8" y="14" style="fill:var(--faint);font-family:var(--font-mono);font-size:10px;letter-spacing:.1em">PER-AGENT SEQUENCE</text>
+      <g style="font-family:var(--font-mono);font-size:11px">
+        <rect x="200" y="24" width="56" height="30" rx="6" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1"/>
+        <text x="228" y="43" text-anchor="middle" style="fill:var(--accent)">5</text>
+        <rect x="262" y="24" width="56" height="30" rx="6" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1"/>
+        <text x="290" y="43" text-anchor="middle" style="fill:var(--accent)">6</text>
+        <rect x="324" y="24" width="56" height="30" rx="6" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1"/>
+        <text x="352" y="43" text-anchor="middle" style="fill:var(--accent)">7</text>
+        <rect x="386" y="24" width="56" height="30" rx="6" style="fill:var(--surface-2);stroke:var(--border-strong);stroke-width:1"/>
+        <text x="414" y="43" text-anchor="middle" style="fill:var(--muted)">8</text>
+        <rect x="448" y="24" width="56" height="30" rx="6" style="fill:none;stroke:var(--border-strong);stroke-width:1;stroke-dasharray:3 3"/>
+        <text x="476" y="43" text-anchor="middle" style="fill:var(--faint)">9</text>
+        <text x="516" y="43" style="fill:var(--faint);font-size:10px">not yet written</text>
+      </g>
+
+      <g style="font-family:var(--font-mono);font-size:11px">
+        <text x="8" y="96" style="fill:var(--text)">GET ?offset=5</text>
+        <path d="M200 78 L200 88 L380 88 L380 78" style="fill:none;stroke:var(--accent);stroke-width:1.5"/>
+        <path d="M290 88 L290 100" style="fill:none;stroke:var(--accent);stroke-width:1.5"/>
+        <text x="300" y="104" style="fill:var(--accent)">200 · 3 entries</text>
+        <text x="300" y="120" style="fill:var(--muted);font-size:10px">next_offset: 8</text>
+
+        <text x="8" y="160" style="fill:var(--text)">GET ?offset=8</text>
+        <rect x="200" y="144" width="180" height="22" rx="6" style="fill:none;stroke:var(--border-strong);stroke-width:1;stroke-dasharray:3 3"/>
+        <text x="212" y="159" style="fill:var(--faint);font-size:10px">timeout elapses</text>
+        <text x="392" y="159" style="fill:var(--muted)">204 · empty body</text>
+        <text x="392" y="175" style="fill:var(--warn);font-size:10px">no next_offset — re-poll from 8</text>
+
+        <text x="8" y="219" style="fill:var(--text)">GET ?offset=8</text>
+        <path d="M386 202 L386 211 L442 211 L442 202" style="fill:none;stroke:var(--accent);stroke-width:1.5"/>
+        <path d="M414 211 L414 223" style="fill:none;stroke:var(--accent);stroke-width:1.5"/>
+        <text x="454" y="219" style="fill:var(--accent)">200 · 1 entry</text>
+        <text x="454" y="235" style="fill:var(--muted);font-size:10px">next_offset: 9</text>
+      </g>
+    </svg>
+    <figcaption>A 204 carries no <code>next_offset</code>, so the offset does not move — the next poll reuses it. Entries are not consumed by reading them.</figcaption>
+  </figure>
+
+  <pre><code class="language-python">offset = None
+while True:
+    update = client.get_updates(offset=offset)
+    if update is None:
+        continue            # 204: no next_offset — re-poll with the SAME offset
+    offset = update.next_offset
+    handle(update)</code></pre>
+
+  <p>Three things follow, and they are the whole subtlety of this endpoint:</p>
+  <ol>
+    <li><strong>A 204 carries no <code>next_offset</code>.</strong> Re-poll with the same offset. <code>get_updates()</code> returns <code>None</code>; <code>poll_updates()</code> does this for you.</li>
+    <li><strong>Polling does not consume entries.</strong> They are retained for 30 days, so the same offset can be re-read — which also means <em>you</em> decide what counts as already handled.</li>
+    <li><strong>A message you mark as read may be deleted</strong>, and is then no longer returned by a poll at an earlier offset.</li>
+  </ol>
+
+  <h3 id="r-start">Where to start</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Start</th><th>How</th><th>Effect</th></tr></thead>
+    <tbody>
+      <tr><td class="wrap">New traffic only</td><td>omit <code>offset</code></td><td class="wrap">Resolves to the head at the moment the request arrives. <strong>Do this once</strong> — an offset-less poll re-resolves the head, so a loop built on them can miss whatever arrived between one response and the next request.</td></tr>
+      <tr><td class="wrap">Everything retained</td><td><code>offset=0</code></td><td class="wrap">Replays up to 30 days of backlog. An agent that answers automatically will answer all of it.</td></tr>
+      <tr><td class="wrap">Where you left off</td><td><code>offset=&lt;stored&gt;</code></td><td class="wrap">The normal case once you persist it.</td></tr>
+    </tbody>
+  </table></div>
+  <p>With <code>Agent</code>, that is <code>start="new"</code>, <code>start="beginning"</code> or an <code>offset_store</code> — see <a href="#/agent">offset persistence</a>.</p>
+  <div class="note warn">
+    <span class="tag">Before replaying a backlog</span>
+    <p>Record which <code>message.id</code> values you have handled, or filter on <code>message.timestamp</code>. <code>Agent</code> deduplicates within a process; across restarts, that is your store's job — see <a href="#/recipes">Recipes</a>.</p>
+  </div>
+
+  <h2 id="r-loop">The poll loop</h2>
+  <pre><code class="language-python">for update in client.poll_updates(
+    offset=None,
+    limit=50,
+    timeout=25,
+    on_offset=save_offset,   # called with each new next_offset
+    max_polls=None,          # stop after N polls
+    stop=None,               # callable checked before each poll
+):
+    ...</code></pre>
+  <p>It yields only <strong>non-empty</strong> updates, skips 204s without moving the offset, and backs off on <code>RateLimitError</code> and <code>ServerError</code> while reusing the prior offset — nothing was consumed, so nothing is lost.</p>
+  <p><code>PollReplacedError</code> is raised, not retried: it means a second poll for the same agent replaced this one. Run one poll loop per token.</p>
+
+  <h2 id="r-contents">What an update contains</h2>
+  <pre><code class="language-python">update.messages        # list[Message]  — always present, may be empty
+update.statuses        # list[Status]   — receipts for messages you sent
+update.contacts        # list[Contact]  — at most one entry per user
+update.next_offset     # int
+update.agent_id        # your agent's numeric id
+update.raw             # the untouched JSON
+bool(update)           # True when it has any messages or statuses</code></pre>
+  <p>A poll can return only messages, only statuses, or both.</p>
+
+  <h3 id="r-profiles">Profile names</h3>
+  <p><code>contacts[].profile</code> appears <strong>only</strong> when the user has set a profile name, and an entry may omit it even when earlier ones had it. Accumulate names across polls rather than relying on a single response:</p>
+  <pre><code class="language-python">names = {}
+
+@agent.on_update
+def remember_names(update):
+    for contact in update.contacts:
+        if contact.name:
+            names[contact.wa_id] = contact.name</code></pre>
+
+  <h2 id="r-failures">What can go wrong</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Code</th><th>Meaning</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td>204</td><td class="wrap">Nothing to deliver before the timeout</td><td class="wrap">Re-poll with the same offset</td></tr>
+      <tr><td>400</td><td class="wrap">A query parameter is not a plain integer</td><td class="wrap">Fix the value</td></tr>
+      <tr><td>401</td><td class="wrap">Missing or malformed <code>Authorization</code> header</td><td class="wrap">Check the token</td></tr>
+      <tr><td>409</td><td class="wrap">A newer poll replaced this one</td><td class="wrap">Run one poll at a time per agent</td></tr>
+      <tr><td>429</td><td class="wrap">More than 15 polls per minute</td><td class="wrap">Reuse the offset, back off</td></tr>
+      <tr><td>500</td><td class="wrap">Internal error</td><td class="wrap">Reuse the offset, back off</td></tr>
+    </tbody>
+  </table></div>
+</article>
+
+<!-- ============================ RECEIPTS ============================ -->
+<article class="page" id="receipts" data-title="Receipts and typing" data-group="Endpoints" data-hint="POST /statuses" hidden>
+  <p class="eyebrow">POST /agent/v1/statuses</p>
+  <h1>Receipts and typing</h1>
+  <p class="lede">One endpoint does both: it marks a message the user sent you as <strong>read</strong>, and optionally shows a <strong>typing indicator</strong> in the same call.</p>
+
+  <pre><code class="language-python">client.mark_read("wamid.HBg...")                  # blue ticks
+client.mark_read("wamid.HBg...", typing=True)     # ticks + "typing…"
+client.send_typing("wamid.HBg...")                # same as the line above</code></pre>
+  <p>Both return <code>True</code> when the platform accepted it.</p>
+
+  <h2 id="rc-what">What you may mark</h2>
+  <p>Only a message <strong>the agent's creator sent to this agent</strong>, identified by a wamid from <code>GET /updates</code>. Marking anything else is HTTP 403 (code <code>131005</code>); a <code>message_id</code> that is not a wamid issued by the platform is a 400.</p>
+  <p><code>"read"</code> is the only status an agent can set — there is no "delivered" to send, and no unread.</p>
+
+  <h2 id="rc-typing">The typing indicator</h2>
+  <pre><code class="language-python">@agent.on_text
+def slow_work(ctx):
+    answer = think_hard(ctx.text)     # takes a while
+    ctx.reply(answer)</code></pre>
+  <p>With <code>Agent</code>, the indicator is sent for you before each handler runs (<code>typing=True</code>, the default). By hand it is <code>{"type": "text"}</code> — the only accepted shape.</p>
+  <p>Two rules:</p>
+  <ul>
+    <li><strong>It clears when you reply, or after 25 seconds</strong> — whichever comes first. For a reply that takes longer, repeat the call to refresh it.</li>
+    <li><strong>Show it only when you are going to reply.</strong> An indicator that never resolves into a message is worse than none.</li>
+  </ul>
+  <pre><code class="language-python">@agent.on_text
+def very_slow(ctx):
+    for chunk in long_running_job(ctx.text):
+        ctx.typing()          # refresh before each 25-second window elapses
+    ctx.reply("done")</code></pre>
+  <p>See <a href="#/recipes">work that takes longer than 25 seconds</a> for a version that refreshes on a timer.</p>
+
+  <h2 id="rc-off">Turning the automatic receipts off</h2>
+  <pre><code class="language-python">agent = Agent(token, typing=False)                   # mark read, no indicator
+agent = Agent(token, typing=False, mark_read=False)  # neither; you decide in the handler</code></pre>
+  <p>With both off, nothing is sent for a message until you call <code>ctx.mark_read()</code> yourself. Note that <code>Agent</code> only acknowledges messages that at least one handler matches.</p>
+
+  <h2 id="rc-failures">What can go wrong</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Code</th><th>Meaning</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td>400</td><td class="wrap">A field is missing or malformed; <code>typing_indicator</code> has a <code>type</code> other than <code>"text"</code></td><td class="wrap">Read <code>error_data.details</code>, which names the field</td></tr>
+      <tr><td>401</td><td class="wrap">Missing or malformed <code>Authorization</code> header</td><td class="wrap">Check the token</td></tr>
+      <tr><td>403</td><td class="wrap">The message was not sent by the agent's creator</td><td class="wrap">Mark only the creator's messages</td></tr>
+      <tr><td>429</td><td class="wrap">More than 12 requests per minute</td><td class="wrap"><a href="#/rate-limits">Paced for you by default</a></td></tr>
+      <tr><td>500</td><td class="wrap">Internal error — the message may already be marked read</td><td class="wrap">Back off and retry</td></tr>
+      <tr><td>503</td><td class="wrap">The receipt or the indicator was not accepted</td><td class="wrap">Retry; the two cases are indistinguishable, so it may already be read</td></tr>
+    </tbody>
+  </table></div>
+  <p>A failed receipt is not worth crashing over: <code>Agent</code> logs it as a warning and runs the handler anyway.</p>
+</article>
+
+<!-- ============================ MEDIA ============================ -->
+<article class="page" id="media" data-title="Media" data-group="Endpoints" data-hint="upload · download · delete" hidden>
+  <p class="eyebrow">POST / GET / DELETE /agent/v1/media</p>
+  <h1>Media</h1>
+  <p class="lede">Media never travels inside a message. You upload bytes and get an id; a message references that id. Inbound media is the same in reverse.</p>
+
+  <pre><code class="language-python">media_id = client.upload_media("invoice.pdf")
+client.send_document(to, media_id=media_id, filename="invoice.pdf")</code></pre>
+  <p>Uploaded media expires after <strong>30 days</strong>.</p>
+
+  <h2 id="m-upload">Uploading</h2>
+  <pre><code class="language-python">client.upload_media(file, mime_type=None, filename=None) -&gt; str</code></pre>
+  <p><code>file</code> can be a path, raw <code>bytes</code>, or an open binary file object:</p>
+  <pre><code class="language-python">client.upload_media("photo.jpg")                    # type guessed from the name
+client.upload_media(Path("report.pdf"))
+client.upload_media(png_bytes, mime_type="image/png", filename="chart.png")
+client.upload_media(open("clip.mp4", "rb"))</code></pre>
+  <p>The MIME type is guessed from the filename when you don't pass one. When it can't be guessed, the library raises <code>ValidationError</code> rather than letting the API reject the upload — pass <code>mime_type=</code> explicitly.</p>
+  <p>Before uploading it also checks the type is <a href="#/limits">accepted</a> and the file is within the size cap for its category. Both are 400 + code <code>131053</code> from the API, with <code>error_data.details</code> reporting the actual size against the limit.</p>
+
+  <h3 id="m-onestep">Sending in one step</h3>
+  <pre><code class="language-python">client.send_image(to, file="cat.jpg", caption="look at this")
+ctx.reply_document(file="report.pdf", caption="Today's report")</code></pre>
+  <p>Upload once and reuse the id when you send the same file repeatedly — each upload counts against the media rate limit, and each one stores a new object.</p>
+
+  <h2 id="m-download">Downloading</h2>
+  <p>An inbound media message carries an id, not bytes:</p>
+  <pre><code class="language-python">@agent.on_media
+def save(ctx):
+    media = ctx.message.media
+    media.id            # "998a7c17-..."
+    media.mime_type     # "image/jpeg"
+    media.sha256        # Base64 of the SHA-256 digest
+    media.filename      # documents only
+    media.caption       # image / video / document
+    media.voice         # True on a voice note</code></pre>
+  <p>Fetch the bytes in one call:</p>
+  <pre><code class="language-python">data = ctx.download()                       # bytes
+path = ctx.download("/tmp/photo.jpg")       # writes, returns the path
+ctx.download(open("/tmp/photo.jpg", "wb"))  # any writable binary file object</code></pre>
+  <p><code>Client.download_media(media_id, dest=None)</code> is the same thing outside a handler. It is two HTTP requests: <code>GET /media/&lt;id&gt;</code> for metadata, then a fetch of the returned <code>url</code> with your token in the <code>Authorization</code> header. Streaming to a path keeps a 16 MB video out of memory.</p>
+
+  <h3 id="m-metadata">Metadata only</h3>
+  <pre><code class="language-python">media = client.get_media(media_id)
+media.url         # https://lookaside.fbsbx.com/agent/v1/media/&lt;id&gt;/content
+media.mime_type   # application/pdf
+media.sha256      # hex digest
+media.file_size   # 232145</code></pre>
+  <p>Use it to check a size before downloading. To fetch a URL you already hold, <code>client.download_url(url, dest)</code>.</p>
+  <div class="note">
+    <span class="tag">Two encodings, one digest</span>
+    <p>An inbound payload carries <code>sha256</code> as Base64; <code>GET /media/&lt;id&gt;</code> reports the same digest as hex.</p>
+    <pre><code class="language-python">import base64
+base64.b64decode(message.media.sha256).hex() == client.get_media(media.id).sha256</code></pre>
+  </div>
+
+  <h2 id="m-delete">Deleting</h2>
+  <pre><code class="language-python">client.delete_media(media_id)   # -&gt; True</code></pre>
+  <p>Works on media you uploaded and on media that was sent to you. An unknown, expired or already-deleted id — or one belonging to another agent — is 400 + code <code>100</code>. Deleting what you no longer need is good hygiene when you handle a lot of files; everything expires after 30 days regardless.</p>
+
+  <h2 id="m-failures">What can go wrong</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Code</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td>400 · <code>131009</code></td><td class="wrap"><code>messaging_product</code> or <code>file</code> missing from the upload</td></tr>
+      <tr><td>400 · <code>131053</code></td><td class="wrap">Over the size limit for its type, or a MIME type that is not accepted</td></tr>
+      <tr><td>400 · <code>100</code></td><td class="wrap">Unknown, expired, deleted, malformed, or another agent's id (on <code>GET</code>/<code>DELETE</code>)</td></tr>
+      <tr><td>404 · <code>100</code></td><td class="wrap">The id is unknown or expired when fetching the <code>url</code> → <code>MediaNotFoundError</code></td></tr>
+      <tr><td>429</td><td class="wrap">More than 12 requests per minute <strong>to a single media method</strong> — each has its own counter</td></tr>
+    </tbody>
+  </table></div>
+  <p>An expired media id is not recoverable: ask the sender to send the file again, or upload it again yourself.</p>
+</article>
+
+<!-- ============================ MODELS ============================ -->
+<article class="page" id="models" data-title="Models" data-group="Reference" data-hint="Update · Message · Status" hidden>
+  <p class="eyebrow">Reference</p>
+  <h1>Models</h1>
+  <p class="lede">Every response is parsed into a frozen dataclass. Each one keeps the JSON it came from in <code>.raw</code>, so a field the platform adds later is reachable without a library upgrade.</p>
+
+  <pre><code class="language-python">from whagent import Message, Status, Update, Media, SendResult, Contact</code></pre>
+
+  <h2 id="md-update">Update</h2>
+  <p>One response from <code>GET /updates</code>.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Attribute</th><th>Type</th><th></th></tr></thead>
+    <tbody>
+      <tr><td><code>messages</code></td><td><code>list[Message]</code></td><td class="wrap">Inbound messages; always present, may be empty</td></tr>
+      <tr><td><code>statuses</code></td><td><code>list[Status]</code></td><td class="wrap">Receipts for messages you sent</td></tr>
+      <tr><td><code>contacts</code></td><td><code>list[Contact]</code></td><td class="wrap">At most one entry per user</td></tr>
+      <tr><td><code>next_offset</code></td><td><code>int | None</code></td><td class="wrap">Pass as <code>offset</code> on the next poll, unchanged</td></tr>
+      <tr><td><code>agent_id</code></td><td><code>str | None</code></td><td class="wrap">Your agent's numeric id</td></tr>
+    </tbody>
+  </table></div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Method</th><th></th></tr></thead>
+    <tbody>
+      <tr><td><code>bool(update)</code></td><td class="wrap"><code>True</code> when it carries any messages or statuses</td></tr>
+      <tr><td><code>for message in update</code></td><td class="wrap">iterates <code>messages</code></td></tr>
+      <tr><td><code>update.profile_name(wa_id)</code></td><td class="wrap">that participant's display name, when this update had one</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="md-message">Message</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Attribute</th><th>Type</th><th></th></tr></thead>
+    <tbody>
+      <tr><td><code>id</code></td><td><code>str</code></td><td class="wrap">wamid — quote it, mark it read, deduplicate on it</td></tr>
+      <tr><td><code>sender</code></td><td><code>str</code></td><td class="wrap"><code>user:&lt;id&gt;</code>; send back as a recipient unchanged</td></tr>
+      <tr><td><code>type</code></td><td><code>str</code></td><td class="wrap">text, image, audio, video, document, sticker, reaction</td></tr>
+      <tr><td><code>timestamp</code></td><td><code>str | None</code></td><td class="wrap">Unix seconds, as the platform sends it</td></tr>
+      <tr><td><code>datetime</code></td><td><code>datetime | None</code></td><td class="wrap">the same, as an aware UTC datetime</td></tr>
+      <tr><td><code>text</code></td><td><code>str | None</code></td><td class="wrap">body of a text message; <code>None</code> for every other type</td></tr>
+      <tr><td><code>caption</code></td><td><code>str | None</code></td><td class="wrap">caption of an image, video or document</td></tr>
+      <tr><td><code>media</code></td><td><code>InboundMedia | None</code></td><td class="wrap"></td></tr>
+      <tr><td><code>media_id</code></td><td><code>str | None</code></td><td class="wrap">shortcut for <code>media.id</code></td></tr>
+      <tr><td><code>reaction</code></td><td><code>Reaction | None</code></td><td class="wrap"></td></tr>
+      <tr><td><code>context</code></td><td><code>MessageContext | None</code></td><td class="wrap">the quoted message, when there is one</td></tr>
+      <tr><td><code>profile_name</code></td><td><code>str | None</code></td><td class="wrap">sender's display name, when the update carried one</td></tr>
+      <tr><td><code>is_media</code>, <code>is_reply</code></td><td><code>bool</code></td><td class="wrap"></td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 id="md-inboundmedia">InboundMedia</h3>
+  <p><code>id</code>, <code>mime_type</code>, <code>sha256</code> (<strong>Base64</strong> of the digest), <code>caption</code>, <code>filename</code> (documents), <code>voice</code> (<code>True</code> on a voice note), <code>animated</code> (always <code>False</code> on stickers you receive).</p>
+
+  <h3 id="md-reaction">Reaction</h3>
+  <p><code>message_id</code> (the wamid being reacted to), <code>emoji</code>, and <code>removed</code> — <code>True</code> when the emoji is empty, meaning the reaction was taken back. Reactions are receive-only.</p>
+
+  <h3 id="md-context">MessageContext</h3>
+  <p><code>message_id</code> (wamid of the quoted message), <code>sender</code> (its author), and <code>from_agent</code> — <code>True</code> when your agent wrote the quoted message, <code>False</code> when the user did.</p>
+  <div class="note">
+    <span class="tag">Field name</span>
+    <p>The inbound field is <code>context.id</code>, while a send uses <code>context.message_id</code>. The model normalizes both to <code>message_id</code>.</p>
+  </div>
+
+  <h2 id="md-status">Status</h2>
+  <p>A delivery or read receipt for a message <strong>your agent sent</strong>.</p>
+  <div class="tablewrap"><table>
+    <tbody>
+      <tr><td><code>id</code></td><td class="wrap">wamid of the outbound message</td></tr>
+      <tr><td><code>status</code></td><td class="wrap"><code>"delivered"</code> or <code>"read"</code></td></tr>
+      <tr><td><code>recipient_id</code></td><td class="wrap"><code>user:&lt;id&gt;</code></td></tr>
+      <tr><td><code>timestamp</code>, <code>datetime</code></td><td class="wrap"></td></tr>
+      <tr><td><code>delivered</code>, <code>read</code></td><td class="wrap"><code>bool</code> shortcuts</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="md-contact">Contact</h2>
+  <p><code>wa_id</code> (<code>user:&lt;id&gt;</code>) and <code>name</code> — the profile name, present only when the user has set one. See <a href="#/receiving">profile names</a>.</p>
+
+  <h2 id="md-sendresult">SendResult</h2>
+  <div class="tablewrap"><table>
+    <tbody>
+      <tr><td><code>message_id</code></td><td class="wrap">server-assigned wamid — record it; receipts refer to it</td></tr>
+      <tr><td><code>wa_id</code></td><td class="wrap">the user the message was routed to</td></tr>
+      <tr><td><code>input</code></td><td class="wrap">the <code>to</code> value echoed back</td></tr>
+    </tbody>
+  </table></div>
+  <p><code>str(result)</code> is the message id.</p>
+
+  <h2 id="md-media">Media</h2>
+  <p>Metadata from <code>GET /media/&lt;id&gt;</code>.</p>
+  <div class="tablewrap"><table>
+    <tbody>
+      <tr><td><code>id</code></td><td class="wrap"></td></tr>
+      <tr><td><code>url</code></td><td class="wrap">fetch it with your token in the <code>Authorization</code> header</td></tr>
+      <tr><td><code>mime_type</code></td><td class="wrap"></td></tr>
+      <tr><td><code>sha256</code></td><td class="wrap"><strong>hex</strong> digest (inbound payloads carry Base64 of the same digest)</td></tr>
+      <tr><td><code>file_size</code></td><td class="wrap">bytes</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="md-identifiers">Identifier helpers</h2>
+  <pre><code class="language-python">from whagent import participant_type, is_user
+
+participant_type("user:509...")   # "user"
+participant_type("agent:123")     # "agent"
+participant_type("509...")        # None
+is_user(message.sender)           # True</code></pre>
+  <p>See <a href="#/concepts">participant identifiers</a> for why they should never be used as a primary key.</p>
+
+  <h2 id="md-unknown">Unknown types</h2>
+  <p>A message type the library doesn't know still parses: <code>type</code> is whatever the platform sent, <code>text</code> and <code>media</code> are <code>None</code>, and the payload is in <code>.raw</code>.</p>
+</article>
+
+<!-- ============================ ERRORS ============================ -->
+<article class="page" id="errors" data-title="Errors" data-group="Reference" data-hint="exceptions · codes · retries" hidden>
+  <p class="eyebrow">Reference</p>
+  <h1>Errors</h1>
+  <p class="lede">Every failure raises a subclass of <code>WhagentError</code>.</p>
+
+  <pre><code>WhagentError
+├── ValidationError        the library stopped the request locally (also a ValueError)
+├── TransportError         no HTTP response at all — network failure, timeout
+└── APIError               an error response from the API
+    ├── AuthenticationError    401 / 190
+    ├── InvalidRequestError    400 / 100, 131009
+    │   └── MediaUploadError   400 / 131053
+    ├── ForbiddenError         403 / 131005
+    ├── NotFoundError          404
+    │   └── MediaNotFoundError 404 / 100
+    ├── RateLimitError         429 / 130429
+    ├── NotDeliveredError      503 / 131016
+    ├── PollReplacedError      409 / 1752041
+    └── ServerError            5xx / 2</code></pre>
+
+  <pre><code class="language-python">from whagent import ForbiddenError, RateLimitError, ValidationError
+
+try:
+    client.send_text(to, body)
+except ValidationError as exc:
+    ...          # never left the process: bad recipient, over a cap, bad MIME type
+except ForbiddenError:
+    ...          # an agent may only message its creator
+except RateLimitError as exc:
+    ...          # already retried; exc.retry_after is set when the API sent one</code></pre>
+
+  <h2 id="e-attributes">What an APIError carries</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Attribute</th><th></th></tr></thead>
+    <tbody>
+      <tr><td><code>status</code></td><td class="wrap">HTTP status</td></tr>
+      <tr><td><code>code</code></td><td class="wrap"><code>error.code</code> — the value to branch on</td></tr>
+      <tr><td><code>message</code></td><td class="wrap">human-readable summary; usually begins with <code>(#code)</code>, but the format is not guaranteed</td></tr>
+      <tr><td><code>details</code></td><td class="wrap"><code>error.error_data.details</code>, when the API supplied one; wording is not guaranteed</td></tr>
+      <tr><td><code>fbtrace_id</code></td><td class="wrap">include it in support requests</td></tr>
+      <tr><td><code>error_type</code></td><td class="wrap">always <code>OAuthException</code>, even for errors unrelated to authentication</td></tr>
+      <tr><td><code>raw</code></td><td class="wrap">the full error body</td></tr>
+    </tbody>
+  </table></div>
+  <p>Branch on <code>code</code>, never on the text of <code>message</code>.</p>
+  <pre><code class="language-python">except APIError as exc:
+    logger.error("send failed: code=%s status=%s trace=%s",
+                 exc.code, exc.status, exc.fbtrace_id)</code></pre>
+
+  <h2 id="e-codes">Error code reference</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>code</th><th>HTTP</th><th>Meaning</th><th>Exception</th></tr></thead>
+    <tbody>
+      <tr><td><code>2</code></td><td>500</td><td class="wrap">Internal server error</td><td class="wrap"><code>ServerError</code></td></tr>
+      <tr><td><code>100</code></td><td>400</td><td class="wrap">Token present but not valid; unknown media id; a length cap exceeded (then <code>message</code> is just the field name)</td><td class="wrap"><code>InvalidRequestError</code></td></tr>
+      <tr><td><code>100</code></td><td>404</td><td class="wrap">Media id unknown or expired when fetching its URL</td><td class="wrap"><code>MediaNotFoundError</code></td></tr>
+      <tr><td><code>190</code></td><td>401</td><td class="wrap"><code>Authorization</code> header absent or malformed</td><td class="wrap"><code>AuthenticationError</code></td></tr>
+      <tr><td><code>130429</code></td><td>429</td><td class="wrap">Too many requests</td><td class="wrap"><code>RateLimitError</code></td></tr>
+      <tr><td><code>131005</code></td><td>403</td><td class="wrap">Recipient is not the agent's creator, or the message being marked read was not sent by them</td><td class="wrap"><code>ForbiddenError</code></td></tr>
+      <tr><td><code>131009</code></td><td>400</td><td class="wrap">Required field missing or malformed; recipient not a WhatsApp user; media type cannot be sent; media id unknown or expired</td><td class="wrap"><code>InvalidRequestError</code></td></tr>
+      <tr><td><code>131016</code></td><td>503</td><td class="wrap">Not accepted for delivery</td><td class="wrap"><code>NotDeliveredError</code></td></tr>
+      <tr><td><code>131053</code></td><td>400</td><td class="wrap">Media rejected at upload — over the size limit, or an unaccepted MIME type</td><td class="wrap"><code>MediaUploadError</code></td></tr>
+      <tr><td><code>1752041</code></td><td>409</td><td class="wrap">A newer poll replaced this one</td><td class="wrap"><code>PollReplacedError</code></td></tr>
+    </tbody>
+  </table></div>
+  <p>An unknown code falls back to a class chosen by the HTTP status, so a code the platform adds later still raises something sensible.</p>
+
+  <h2 id="e-traps">Two traps worth knowing</h2>
+  <div class="note warn">
+    <span class="tag">A 401 and a 400 both mean "token"</span>
+    <p>An absent or malformed <code>Authorization</code> header is 401 + code <code>190</code>; a token that is present but <em>invalid</em> — rotated, revoked — is <strong>400</strong> + code <code>100</code>. If sends suddenly fail with <code>InvalidRequestError</code>, check the token before the payload.</p>
+  </div>
+  <div class="note warn">
+    <span class="tag">Code 100 is overloaded</span>
+    <p>It covers an invalid token, an unknown media id, and a length cap. <code>details</code> — or the field name in <code>message</code> — tells them apart.</p>
+  </div>
+
+  <h2 id="e-retries">Retries</h2>
+  <p>The library retries automatically, with exponential backoff and jitter, up to <code>max_retries</code> (default 3):</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Failure</th><th>Retried?</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td><code>429</code></td><td>yes</td><td class="wrap">Nothing was sent</td></tr>
+      <tr><td><code>503</code> · <code>131016</code></td><td>yes</td><td class="wrap">Explicitly "not accepted for delivery", so not sent</td></tr>
+      <tr><td><code>500</code> on a read or delete</td><td>yes</td><td class="wrap">No side effect to duplicate</td></tr>
+      <tr><td><code>500</code> on a send</td><td>no, by default</td><td class="wrap"><strong>Unknown</strong> whether the message was sent</td></tr>
+      <tr><td>Reset / timeout on a send</td><td>no, by default</td><td class="wrap">Same</td></tr>
+      <tr><td><code>4xx</code></td><td>no</td><td class="wrap">A repeat fails identically</td></tr>
+      <tr><td><code>409</code></td><td>no</td><td class="wrap">Means a second poller exists; retrying fights it</td></tr>
+    </tbody>
+  </table></div>
+  <pre><code class="language-python">client = Client(token, retry_send_on_server_error=True)   # duplicate beats a loss
+client = Client(token, max_retries=0)                     # do it all yourself</code></pre>
+  <p><code>RateLimitError.retry_after</code> carries the <code>Retry-After</code> header when the API sends one; the library honours it. See <a href="#/sending">retrying a send</a> for the full decision table.</p>
+
+  <h2 id="e-validation">Local validation</h2>
+  <p><code>ValidationError</code> means the request never left the process. It fires on a recipient that isn't <code>user:&lt;id&gt;</code>, a text body over 4096 characters, a caption over 1024 or on a type that doesn't take one, a <code>reaction</code> send, an unaccepted MIME type, a file over its size limit, an empty file, or a media send given both <code>media_id=</code> and <code>file=</code>.</p>
+  <pre><code class="language-python">client = Client(token, validate=False)   # see exactly what the API says</code></pre>
+</article>
+
+<!-- ============================ RATE LIMITS ============================ -->
+<article class="page" id="rate-limits" data-title="Rate limits" data-group="Reference" data-hint="12/min · 15/min" hidden>
+  <p class="eyebrow">Reference</p>
+  <h1>Rate limits</h1>
+  <p class="lede">Each method has its own counter over a rolling 60-second window, per agent.</p>
+
+  <div class="tablewrap"><table>
+    <thead><tr><th>Endpoint</th><th>Limit</th></tr></thead>
+    <tbody>
+      <tr><td><code>POST /messages</code></td><td>12 / minute</td></tr>
+      <tr><td><code>POST /statuses</code></td><td>12 / minute</td></tr>
+      <tr><td><code>GET /updates</code></td><td>15 / minute</td></tr>
+      <tr><td><code>POST /media</code></td><td>12 / minute</td></tr>
+      <tr><td><code>GET /media/&lt;id&gt;</code></td><td>12 / minute</td></tr>
+      <tr><td><code>DELETE /media/&lt;id&gt;</code></td><td>12 / minute</td></tr>
+    </tbody>
+  </table></div>
+  <p>The three media methods count <strong>separately</strong> — 12 uploads and 12 downloads in the same minute is fine. Exceeding a limit is HTTP 429 with <code>error.code</code> <code>130429</code>.</p>
+
+  <h2 id="rl-limiter">The built-in limiter</h2>
+  <p>On by default. Before each request the client checks that method's window and, if it is full, sleeps exactly long enough for the oldest call to age out. So a burst is paced rather than rejected:</p>
+  <pre><code class="language-python">for message in batch:                        # more than 12
+    client.send_text(message.sender, "...")  # the 13th waits, then goes</code></pre>
+  <p>It is per <code>Client</code> instance and thread-safe. Turn it off if you pace requests yourself, or run several processes against one token:</p>
+  <pre><code class="language-python">client = Client(token, rate_limit=False)</code></pre>
+  <div class="note warn">
+    <span class="tag">One client, one counter</span>
+    <p>The limiter only knows about requests <strong>this client</strong> made. With several clients or processes sharing one token, the platform's counter is the sum of all of them — pace them centrally, or leave the automatic 429 retry to catch the overflow.</p>
+  </div>
+
+  <h2 id="rl-budget">Living inside 12 sends a minute</h2>
+  <p>A send every five seconds is the real constraint on a chatty agent. What helps:</p>
+  <ul>
+    <li><strong>One message instead of three.</strong> Batch what you were going to send as a sequence into a single body — 4096 characters is a lot.</li>
+    <li><strong>A typing indicator costs a <code>POST /statuses</code></strong>, from a separate 12/minute budget — it doesn't eat into sends.</li>
+    <li><strong>Upload once, send many.</strong> A <code>media_id</code> can be sent repeatedly; re-uploading the same file spends the media budget for nothing.</li>
+    <li><strong>Poll with <code>timeout=25</code>.</strong> Fewer, longer polls: at 25 seconds you use about 2.4 of your 15 polls per minute.</li>
+  </ul>
+
+  <h2 id="rl-429">When you do hit 429</h2>
+  <p><code>RateLimitError</code> is retried automatically with exponential backoff and jitter, honouring <code>Retry-After</code> when the API sends one. Inside the poll loop the prior offset is reused, so nothing is lost. If you catch it yourself, back off exponentially — do not retry immediately in a tight loop.</p>
+</article>
+
+<!-- ============================ LIMITS ============================ -->
+<article class="page" id="limits" data-title="Limits and formats" data-group="Reference" data-hint="caps · MIME types · codecs" hidden>
+  <p class="eyebrow">Reference</p>
+  <h1>Limits and formats</h1>
+  <p class="lede">Everything the platform caps, and everything it accepts. The library checks all of it before a request leaves.</p>
+
+  <pre><code class="language-python">from whagent import TEXT_BODY_MAX, CAPTION_MAX, SIZE_LIMITS, ACCEPTED_MIME_TYPES
+from whagent.limits import size_limit_for, category_for</code></pre>
+
+  <h2 id="l-text">Text</h2>
+  <div class="tablewrap"><table>
+    <tbody>
+      <tr><td>Message body</td><td>4096 characters</td></tr>
+      <tr><td>Caption</td><td>1024 characters</td></tr>
+      <tr><td>Captions available on</td><td><code>image</code>, <code>video</code>, <code>document</code></td></tr>
+      <tr><td>Filename available on</td><td><code>document</code></td></tr>
+    </tbody>
+  </table></div>
+  <p>Exceeding either is 400 + code <code>100</code>, where <code>error.message</code> is just the field name.</p>
+
+  <h2 id="l-sizes">Size limits</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Category</th><th>Limit</th></tr></thead>
+    <tbody>
+      <tr><td>Image</td><td>5 MB</td></tr>
+      <tr><td>Sticker</td><td>500 KB</td></tr>
+      <tr><td>Video, audio, document, generic binary</td><td>16 MB</td></tr>
+    </tbody>
+  </table></div>
+  <p>Over the limit is 400 + code <code>131053</code>; <code>error_data.details</code> reports the actual size against the limit.</p>
+
+  <h2 id="l-mime">Accepted MIME types</h2>
+  <p>Anything outside this list is rejected at upload with 400 + code <code>131053</code>.</p>
+
+  <h3 id="l-image">Image — 5 MB</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Format</th><th>Extension</th><th>MIME type</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>JPEG</td><td><code>.jpg</code>, <code>.jpeg</code></td><td><code>image/jpeg</code></td><td class="wrap">preferred for photographs</td></tr>
+      <tr><td>PNG</td><td><code>.png</code></td><td><code>image/png</code></td><td class="wrap">preferred for graphics with transparency</td></tr>
+    </tbody>
+  </table></div>
+  <p>8-bit, RGB or RGBA. Keep the total pixel count at or below <strong>25 megapixels</strong> (5000 × 5000, or an equivalent area).</p>
+
+  <h3 id="l-video">Video — 16 MB</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Format</th><th>Extension</th><th>MIME type</th></tr></thead>
+    <tbody>
+      <tr><td>MP4</td><td><code>.mp4</code></td><td><code>video/mp4</code> — preferred container</td></tr>
+      <tr><td>3GPP</td><td><code>.3gp</code></td><td><code>video/3gpp</code></td></tr>
+    </tbody>
+  </table></div>
+  <p><strong>H.264</strong> video and <strong>AAC</strong> audio, with one audio stream or none. For the widest playback compatibility target the H.264 <strong>Baseline</strong> profile, or <strong>Main</strong> without B-frames. Write the <code>moov</code> atom ahead of <code>mdat</code> so playback can start before the download finishes:</p>
+  <pre><code class="language-bash">ffmpeg -i in.mov -c:v libx264 -profile:v baseline -c:a aac -movflags +faststart out.mp4</code></pre>
+
+  <h3 id="l-audio">Audio — 16 MB</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Format</th><th>Extension</th><th>MIME type</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>AAC</td><td><code>.aac</code></td><td><code>audio/aac</code></td><td class="wrap">ADTS stream</td></tr>
+      <tr><td>MP4 audio</td><td><code>.m4a</code></td><td><code>audio/mp4</code></td><td class="wrap">AAC in an MPEG-4 container</td></tr>
+      <tr><td>MP3</td><td><code>.mp3</code></td><td><code>audio/mpeg</code></td><td class="wrap"></td></tr>
+      <tr><td>AMR-NB</td><td><code>.amr</code></td><td><code>audio/amr</code></td><td class="wrap">AMR-NB only</td></tr>
+      <tr><td>Opus in Ogg</td><td><code>.ogg</code></td><td><code>audio/ogg</code></td><td class="wrap">mono input only</td></tr>
+      <tr><td>Opus</td><td><code>.opus</code></td><td><code>audio/opus</code></td><td class="wrap">stored as <code>audio/ogg; codecs=opus</code></td></tr>
+    </tbody>
+  </table></div>
+  <p>Only Opus is supported in Ogg. Audio you send is delivered as a plain attachment — voice notes are something you receive, not something you send.</p>
+
+  <h3 id="l-document">Document — 16 MB</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Format</th><th>Extension</th><th>MIME type</th></tr></thead>
+    <tbody>
+      <tr><td>PDF</td><td><code>.pdf</code></td><td><code>application/pdf</code></td></tr>
+      <tr><td>Plain text</td><td><code>.txt</code></td><td><code>text/plain</code></td></tr>
+      <tr><td>Word</td><td><code>.doc</code></td><td><code>application/msword</code></td></tr>
+      <tr><td>Word</td><td><code>.docx</code></td><td class="wrap"><code>application/vnd.openxmlformats-officedocument.wordprocessingml.document</code></td></tr>
+      <tr><td>Excel</td><td><code>.xls</code></td><td><code>application/vnd.ms-excel</code></td></tr>
+      <tr><td>Excel</td><td><code>.xlsx</code></td><td class="wrap"><code>application/vnd.openxmlformats-officedocument.spreadsheetml.sheet</code></td></tr>
+      <tr><td>PowerPoint</td><td><code>.ppt</code></td><td><code>application/vnd.ms-powerpoint</code></td></tr>
+      <tr><td>PowerPoint</td><td><code>.pptx</code></td><td class="wrap"><code>application/vnd.openxmlformats-officedocument.presentationml.presentation</code></td></tr>
+    </tbody>
+  </table></div>
+  <p>Set <code>filename</code> to the file's name <strong>including its extension</strong>.</p>
+
+  <h3 id="l-sticker">Sticker — 500 KB</h3>
+  <p>WebP (<code>.webp</code>, <code>image/webp</code>). 512 × 512 is the conventional size; the canvas must be at most 4096 × 4096. Static or animated when sending; stickers you receive are static. Captions are not available on stickers.</p>
+
+  <h3 id="l-binary">Generic binary — 16 MB</h3>
+  <p><code>application/octet-stream</code>, for a file that fits none of the above.</p>
+
+  <h2 id="l-types">Message types</h2>
+  <div class="tablewrap"><table>
+    <tbody>
+      <tr><td>Send</td><td class="wrap"><code>text</code>, <code>image</code>, <code>audio</code>, <code>video</code>, <code>document</code>, <code>sticker</code></td></tr>
+      <tr><td>Receive</td><td class="wrap">those, plus <code>reaction</code></td></tr>
+    </tbody>
+  </table></div>
+  <p>Reactions are <strong>receive-only</strong>; sending one raises <code>ValidationError</code> locally and is a 400 from the API.</p>
+
+  <h2 id="l-retention">Retention</h2>
+  <div class="tablewrap"><table>
+    <tbody>
+      <tr><td>Buffered updates</td><td class="wrap">30 days from when they are stored</td></tr>
+      <tr><td>Uploaded and received media</td><td class="wrap">30 days</td></tr>
+    </tbody>
+  </table></div>
+  <p>A message you mark as read may be deleted before that, and is then no longer returned by a poll at an earlier offset.</p>
+
+  <h2 id="l-polling">Polling</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th></th><th>Default</th><th>Range</th></tr></thead>
+    <tbody>
+      <tr><td><code>limit</code></td><td>50</td><td>≤ 100</td></tr>
+      <tr><td><code>timeout</code></td><td>15 s</td><td>0–25 s</td></tr>
+      <tr><td><code>offset</code></td><td>head at request time</td><td>≥ 0</td></tr>
+    </tbody>
+  </table></div>
+  <p>Out-of-range values are adjusted, not rejected. Only a non-integer is a 400. A typing indicator clears on reply, or after 25 seconds.</p>
+</article>
+
+<!-- ============================ RECIPES ============================ -->
+<article class="page" id="recipes" data-title="Recipes" data-group="Practice" data-hint="patterns that come up" hidden>
+  <p class="eyebrow">Practice</p>
+  <h1>Recipes</h1>
+  <p class="lede">Patterns for the things a real agent runs into.</p>
+
+  <h2 id="rp-restart">Surviving a restart</h2>
+  <p>Store the offset. Without it, <code>start="new"</code> silently drops whatever arrived while the process was down.</p>
+  <pre><code class="language-python">from whagent import Agent, FileOffsetStore
+
+agent = Agent(token, offset_store=FileOffsetStore("/var/lib/myagent/offset"))</code></pre>
+  <p>Any object with <code>load()</code> and <code>save(offset)</code> works — see <a href="#/agent">offset persistence</a> for a Redis version.</p>
+
+  <h2 id="rp-backlog">Replaying a backlog safely</h2>
+  <p><code>start="beginning"</code> replays up to 30 days. An agent that answers automatically will answer <em>all</em> of it. Keep a record of what you have already handled — across restarts, not just in memory:</p>
+  <pre><code class="language-python">import sqlite3
+from whagent import Agent
+
+db = sqlite3.connect("handled.db", check_same_thread=False)
+db.execute("CREATE TABLE IF NOT EXISTS handled (wamid TEXT PRIMARY KEY)")
+
+agent = Agent(token, start="beginning")
+
+@agent.on_message
+def once_only(ctx):
+    try:
+        with db:
+            db.execute("INSERT INTO handled VALUES (?)", (ctx.message.id,))
+    except sqlite3.IntegrityError:
+        return                      # already handled in an earlier run
+    handle(ctx)</code></pre>
+  <p>A cheaper filter when you only care about what is recent:</p>
+  <pre><code class="language-python">import time
+
+CUTOFF = time.time() - 3600
+
+@agent.on_message
+def recent_only(ctx):
+    if int(ctx.message.timestamp or 0) &lt; CUTOFF:
+        return
+    handle(ctx)</code></pre>
+
+  <h2 id="rp-slow">Work that takes longer than 25 seconds</h2>
+  <p>The typing indicator clears after 25 seconds. Refresh it on a timer while the work runs:</p>
+  <pre><code class="language-python">import threading
+from contextlib import contextmanager
+
+@contextmanager
+def keep_typing(ctx, every=20):
+    done = threading.Event()
+
+    def refresh():
+        while not done.wait(every):
+            try:
+                ctx.typing()
+            except Exception:
+                return
+    thread = threading.Thread(target=refresh, daemon=True)
+    thread.start()
+    try:
+        yield
+    finally:
+        done.set()
+        thread.join(timeout=1)
+
+
+@agent.on_text
+def slow(ctx):
+    with keep_typing(ctx):
+        answer = long_running_job(ctx.text)
+    ctx.reply(answer)</code></pre>
+  <p>Show an indicator only when a reply really is coming. Each refresh spends one of your 12 <code>POST /statuses</code> per minute — every 20 seconds is three a minute, which is fine.</p>
+
+  <h2 id="rp-workers">Handling messages off the poll loop</h2>
+  <p>A handler runs inside the poll loop, so slow work delays the next poll. Hand it to a worker instead — while keeping <strong>sends to one recipient sequential</strong>, since concurrent sends have no guaranteed order:</p>
+  <pre><code class="language-python">import queue
+import threading
+
+work = queue.Queue()
+
+@agent.on_text
+def enqueue(ctx):
+    work.put(ctx)
+
+def worker():
+    while True:
+        ctx = work.get()
+        try:
+            ctx.reply(expensive(ctx.text))
+        except Exception:
+            logging.exception("work failed")
+        finally:
+            work.task_done()
+
+threading.Thread(target=worker, daemon=True).start()   # one worker = one send at a time
+agent.run()</code></pre>
+  <p>For several recipients in parallel, shard by <code>ctx.sender</code> — one queue and one thread per conversation — so each conversation stays ordered. And keep <strong>one poll loop per token</strong>, always.</p>
+
+  <h2 id="rp-shutdown">Graceful shutdown</h2>
+  <p><code>run()</code> returns on <kbd>Ctrl-C</kbd>. For a container, stop on <code>SIGTERM</code> too — the loop checks <code>stop</code> before each poll:</p>
+  <pre><code class="language-python">import signal
+import threading
+
+shutdown = threading.Event()
+signal.signal(signal.SIGTERM, lambda *_: shutdown.set())
+signal.signal(signal.SIGINT, lambda *_: shutdown.set())
+
+agent.run(stop=shutdown.is_set)
+agent.close()</code></pre>
+  <p>The check happens between polls, so with <code>timeout=25</code> a shutdown can take up to 25 seconds to be noticed. Lower the poll timeout if you need it snappier.</p>
+
+  <h2 id="rp-long">Splitting a long reply</h2>
+  <p>The cap is 4096 characters per message, and each part costs a send from your 12/minute.</p>
+  <pre><code class="language-python">def chunks(text, size=4000):
+    while text:
+        if len(text) &lt;= size:
+            yield text
+            return
+        cut = text.rfind("\n", 0, size)     # prefer a line break
+        cut = cut if cut &gt; size // 2 else size
+        yield text[:cut]
+        text = text[cut:].lstrip("\n")
+
+
+@agent.on_text
+def long_answer(ctx):
+    for part in chunks(build_answer(ctx.text)):
+        ctx.reply(part)</code></pre>
+  <p>If the content is long enough to need many parts, send a document instead:</p>
+  <pre><code class="language-python">ctx.reply_document(file=report_bytes, mime_type="text/plain", filename="answer.txt")</code></pre>
+
+  <h2 id="rp-commands">Commands and routing</h2>
+  <pre><code class="language-python">@agent.on_text(r"^/start\b")
+def start(ctx):
+    ctx.reply(f"Hi {ctx.profile_name or 'there'}!")
+
+@agent.on_text(r"^/status\b")
+def status(ctx):
+    ctx.reply(f"Up since {started_at:%H:%M}")
+
+@agent.on_text(r"^/(?!start|status)")      # any other slash command
+def unknown_command(ctx):
+    ctx.reply("Unknown command. Try /start or /status.")
+
+@agent.on_text(r"^[^/]")                   # anything that isn't a command
+def conversation(ctx):
+    ctx.reply(answer(ctx.text))</code></pre>
+  <p>Patterns are searched case-insensitively, so anchor with <code>^</code> when you mean "starts with".</p>
+
+  <h2 id="rp-structure">Structuring a larger agent</h2>
+  <p>Keep handlers in modules and import them for their side effect of registering:</p>
+  <pre><code>myagent/
+    __init__.py
+    bot.py          # agent = Agent(...)
+    handlers/
+        __init__.py # from . import commands, media, fallback
+        commands.py # from myagent.bot import agent
+        media.py
+        fallback.py
+    __main__.py     # import myagent.handlers; agent.run()</code></pre>
+  <pre><code class="language-python"># myagent/__main__.py
+from myagent.bot import agent
+import myagent.handlers          # registers everything
+
+if __name__ == "__main__":
+    agent.run()</code></pre>
+  <p>Registration order is dispatch order, so <code>handlers/__init__.py</code> decides which handler sees a message first.</p>
+
+  <h2 id="rp-logging">Logging</h2>
+  <p>The library logs through the <code>whagent</code> logger — offsets at startup, failed receipts, and any handler exception when you have no <code>on_error</code>.</p>
+  <pre><code class="language-python">import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s %(message)s",
+)
+logging.getLogger("whagent").setLevel(logging.DEBUG)</code></pre>
+  <p>Never log the token, and remember that a participant identifier should not be shown to a WhatsApp user — logs are fine, your UI is not.</p>
+
+  <h2 id="rp-service">Running it as a service</h2>
+  <pre><code class="language-ini"># /etc/systemd/system/myagent.service
+[Unit]
+Description=WhatsApp agent
+After=network-online.target
+
+[Service]
+Type=simple
+User=myagent
+Environment=WHATSAPP_AGENT_TOKEN=...
+WorkingDirectory=/opt/myagent
+ExecStart=/opt/myagent/.venv/bin/python -m myagent
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target</code></pre>
+  <p>Because the agent polls, it needs no inbound networking and no public hostname — only outbound HTTPS. Run <strong>one instance per token</strong>: a second one takes the poll away from the first. Point the offset store at a path that survives restarts.</p>
+</article>
+
+<!-- ============================ TESTING ============================ -->
+<article class="page" id="testing" data-title="Testing" data-group="Practice" data-hint="no network needed" hidden>
+  <p class="eyebrow">Practice</p>
+  <h1>Testing</h1>
+  <p class="lede">The whole library is designed so an agent can be tested without a token, a network or a phone.</p>
+
+  <h2 id="t-handlers">Testing your handlers</h2>
+  <p>A handler takes a <code>Context</code>, so the simplest test builds one and calls the handler — no HTTP at all. More realistic, and usually better: drive the real <code>Agent</code> with a fake HTTP session, so the request your handler produces is asserted end to end.</p>
+
+  <h2 id="t-fake">A fake session</h2>
+  <p><code>Client</code> accepts any object with a <code>request()</code> method, so a stand-in is a few lines:</p>
+  <pre><code class="language-python">import json
+
+class FakeResponse:
+    def __init__(self, status_code=200, body=None, content=b""):
+        self.status_code = status_code
+        self._body = body
+        self.headers = {}
+        self.content = content or (json.dumps(body).encode() if body is not None else b"")
+        self.text = self.content.decode()
+
+    def json(self):
+        if self._body is None:
+            raise ValueError("no json")
+        return self._body
+
+    def iter_content(self, chunk_size=1024):
+        yield self.content
+
+
+class FakeSession:
+    def __init__(self):
+        self.responses = []
+        self.requests = []
+
+    def request(self, method, url, **kwargs):
+        self.requests.append({"method": method, "url": url, **kwargs})
+        return self.responses.pop(0) if self.responses else FakeResponse(200, {"success": True})
+
+    def close(self):
+        pass</code></pre>
+
+  <p>Then:</p>
+  <pre><code class="language-python">from whagent import Agent, Client
+
+def test_echo():
+    session = FakeSession()
+    session.responses = [
+        FakeResponse(200, {                     # one poll with one message
+            "object": "whatsapp_agent_platform",
+            "entry": [{"id": "1", "changes": [{"field": "messages", "value": {
+                "messaging_product": "whatsapp",
+                "contacts": [{"wa_id": "user:5", "profile": {"name": "Alex"}}],
+                "messages": [{"from": "user:5", "id": "wamid.A", "timestamp": "1736844652",
+                              "type": "text", "text": {"body": "hello"}}],
+                "statuses": [],
+            }}]}],
+            "next_offset": 2,
+        }),
+        FakeResponse(200, {"success": True}),   # the read receipt
+        FakeResponse(200, {                     # the reply
+            "messaging_product": "whatsapp",
+            "contacts": [{"input": "user:5", "wa_id": "user:5"}],
+            "messages": [{"id": "wamid.OUT"}],
+        }),
+        FakeResponse(204),                      # second poll: nothing
+    ]
+
+    client = Client("test-token", session=session, rate_limit=False)
+    agent = Agent(client=client)
+
+    @agent.on_text
+    def echo(ctx):
+        ctx.reply(f"You said: {ctx.text}")
+
+    agent.run(max_polls=2)
+
+    sent = session.requests[-1]
+    assert sent["url"].endswith("/messages")
+    assert sent["json"]["text"] == {"body": "You said: hello"}</code></pre>
+  <p><code>max_polls</code> and <code>stop</code> exist so <code>run()</code> terminates in a test.</p>
+
+  <h2 id="t-switches">Useful switches</h2>
+  <div class="tablewrap"><table>
+    <tbody>
+      <tr><td><code>Client(..., rate_limit=False)</code></td><td class="wrap">no sleeping between calls</td></tr>
+      <tr><td><code>Client(..., max_retries=0)</code></td><td class="wrap">a failure surfaces immediately instead of being retried</td></tr>
+      <tr><td><code>Client(..., base_url="http://127.0.0.1:PORT/agent/v1")</code></td><td class="wrap">point at a local stub server for an end-to-end test</td></tr>
+      <tr><td><code>Agent(..., typing=False, mark_read=False)</code></td><td class="wrap">no <code>POST /statuses</code> calls to stub out</td></tr>
+      <tr><td><code>Agent(..., skip_own_replays=False)</code></td><td class="wrap">dispatch the same message id more than once</td></tr>
+      <tr><td><code>agent.dispatch(update)</code></td><td class="wrap">feed one update in without polling at all</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="t-own">The library's own tests</h2>
+  <pre><code class="language-bash">pip install -e ".[dev]"
+pytest</code></pre>
+  <p>120 tests, no network. They assert the exact requests the library builds against the payloads in the developer manual — <code>tests/conftest.py</code> has a fuller version of the fake session above, and is a reasonable thing to copy.</p>
+</article>
+
+    <nav class="pagenav" id="pagenav" aria-label="Page navigation"></nav>
+  </main>
+
+  <aside class="toc" id="toc" aria-label="On this page"></aside>
+</div>
+
+<footer class="footer">
+  whagent · an independent Python library for the WhatsApp Agent Platform, built against version 1 of the developer manual ·
+  <a href="https://github.com/Elimeshi1/Whagent">source on GitHub</a>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var pages = Array.prototype.slice.call(document.querySelectorAll("article.page"));
+  var sidebar = document.getElementById("sidebar");
+  var toc = document.getElementById("toc");
+  var pagenav = document.getElementById("pagenav");
+  var filterInput = document.getElementById("filter");
+  var navToggle = document.getElementById("navToggle");
+  var themeToggle = document.getElementById("themeToggle");
+  var links = {};
+
+  /* ---------- theme ---------- */
+
+  function store(key, value) {
+    try { localStorage.setItem(key, value); } catch (e) { /* private mode */ }
+  }
+  function read(key) {
+    try { return localStorage.getItem(key); } catch (e) { return null; }
+  }
+
+  var saved = read("whagent-theme");
+  if (saved === "dark" || saved === "light") {
+    document.documentElement.setAttribute("data-theme", saved);
+  }
+  themeToggle.addEventListener("click", function () {
+    var current = document.documentElement.getAttribute("data-theme");
+    if (!current) {
+      current = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    var next = current === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    store("whagent-theme", next);
+  });
+
+  /* ---------- sidebar ---------- */
+
+  (function buildNav() {
+    var groups = [];
+    var byName = {};
+    pages.forEach(function (page) {
+      var name = page.dataset.group || "Pages";
+      if (!byName[name]) {
+        byName[name] = [];
+        groups.push(name);
+      }
+      byName[name].push(page);
+    });
+
+    groups.forEach(function (name) {
+      var section = document.createElement("div");
+      section.className = "navgroup";
+      var heading = document.createElement("h3");
+      heading.textContent = name;
+      section.appendChild(heading);
+
+      var list = document.createElement("ul");
+      byName[name].forEach(function (page) {
+        var item = document.createElement("li");
+        var link = document.createElement("a");
+        link.href = "#/" + page.id;
+        link.innerHTML = "";
+        link.appendChild(document.createTextNode(page.dataset.title));
+        if (page.dataset.hint) {
+          var hint = document.createElement("span");
+          hint.className = "hint";
+          hint.textContent = page.dataset.hint;
+          link.appendChild(hint);
+        }
+        links[page.id] = link;
+        item.appendChild(link);
+        list.appendChild(item);
+      });
+      section.appendChild(list);
+      sidebar.appendChild(section);
+    });
+
+    var empty = document.createElement("p");
+    empty.className = "nohits";
+    empty.hidden = true;
+    empty.textContent = "No topic matches that.";
+    empty.id = "nohits";
+    sidebar.appendChild(empty);
+  })();
+
+  /* ---------- routing ---------- */
+
+  function parseHash() {
+    var raw = location.hash || "";
+    if (raw.indexOf("#/") !== 0) return { page: pages[0].id, anchor: "" };
+    var rest = raw.slice(2);
+    var cut = rest.indexOf("#");
+    if (cut === -1) return { page: rest, anchor: "" };
+    return { page: rest.slice(0, cut), anchor: rest.slice(cut + 1) };
+  }
+
+  function buildToc(page) {
+    toc.innerHTML = "";
+    var headings = page.querySelectorAll("h2[id]");
+    if (!headings.length) return;
+    var title = document.createElement("h3");
+    title.textContent = "On this page";
+    toc.appendChild(title);
+    var list = document.createElement("ul");
+    Array.prototype.forEach.call(headings, function (heading) {
+      var item = document.createElement("li");
+      var link = document.createElement("a");
+      link.href = "#/" + page.id + "#" + heading.id;
+      link.textContent = heading.textContent;
+      item.appendChild(link);
+      list.appendChild(item);
+    });
+    toc.appendChild(list);
+  }
+
+  function buildPageNav(index) {
+    pagenav.innerHTML = "";
+    var previous = pages[index - 1];
+    var next = pages[index + 1];
+    if (previous) {
+      pagenav.appendChild(navLink(previous, "Previous", "prev"));
+    }
+    if (next) {
+      pagenav.appendChild(navLink(next, "Next", "next"));
+    }
+  }
+
+  function navLink(page, direction, className) {
+    var link = document.createElement("a");
+    link.href = "#/" + page.id;
+    link.className = className;
+    var dir = document.createElement("span");
+    dir.className = "dir";
+    dir.textContent = direction;
+    var title = document.createElement("span");
+    title.className = "ttl";
+    title.textContent = page.dataset.title;
+    link.appendChild(dir);
+    link.appendChild(title);
+    return link;
+  }
+
+  function show(route) {
+    var index = 0;
+    pages.forEach(function (page, i) {
+      var active = page.id === route.page;
+      page.hidden = !active;
+      if (active) index = i;
+    });
+    if (!links[route.page]) {
+      location.replace("#/" + pages[0].id);
+      return;
+    }
+
+    Object.keys(links).forEach(function (id) {
+      links[id].classList.toggle("active", id === route.page);
+      if (id === route.page) {
+        links[id].setAttribute("aria-current", "page");
+      } else {
+        links[id].removeAttribute("aria-current");
+      }
+    });
+
+    var page = pages[index];
+    buildToc(page);
+    buildPageNav(index);
+    document.body.classList.remove("nav-open");
+    navToggle.setAttribute("aria-expanded", "false");
+
+    if (route.anchor) {
+      var target = document.getElementById(route.anchor);
+      if (target) {
+        target.scrollIntoView({ block: "start" });
+        return;
+      }
+    }
+    window.scrollTo(0, 0);
+  }
+
+  function route() {
+    show(parseHash());
+  }
+
+  window.addEventListener("hashchange", route);
+
+  /* ---------- filter ---------- */
+
+  function applyFilter() {
+    var query = filterInput.value.trim().toLowerCase();
+    var hits = 0;
+    pages.forEach(function (page) {
+      var haystack = (page.dataset.title + " " + (page.dataset.hint || "") + " " +
+        page.textContent).toLowerCase();
+      var match = !query || haystack.indexOf(query) !== -1;
+      var item = links[page.id].parentNode;
+      item.hidden = !match;
+      if (match) hits++;
+    });
+    Array.prototype.forEach.call(sidebar.querySelectorAll(".navgroup"), function (group) {
+      var visible = group.querySelectorAll("li:not([hidden])").length;
+      group.hidden = visible === 0;
+    });
+    document.getElementById("nohits").hidden = hits !== 0;
+  }
+
+  filterInput.addEventListener("input", applyFilter);
+  filterInput.addEventListener("keydown", function (event) {
+    if (event.key !== "Enter") return;
+    for (var i = 0; i < pages.length; i++) {
+      var item = links[pages[i].id].parentNode;
+      if (!item.hidden) {
+        location.hash = "#/" + pages[i].id;
+        filterInput.blur();
+        return;
+      }
+    }
+  });
+
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "/" && document.activeElement !== filterInput) {
+      event.preventDefault();
+      filterInput.focus();
+      filterInput.select();
+    } else if (event.key === "Escape" && document.activeElement === filterInput) {
+      filterInput.value = "";
+      applyFilter();
+      filterInput.blur();
+    }
+  });
+
+  /* ---------- mobile nav ---------- */
+
+  navToggle.addEventListener("click", function () {
+    var open = document.body.classList.toggle("nav-open");
+    navToggle.setAttribute("aria-expanded", open ? "true" : "false");
+  });
+
+  /* ---------- syntax highlighting ---------- */
+
+  if (window.hljs) {
+    hljs.configure({ ignoreUnescapedHTML: true });
+    Array.prototype.forEach.call(document.querySelectorAll("pre code"), function (block) {
+      try { hljs.highlightElement(block); } catch (e) { /* leave it as plain text */ }
+    });
+  }
+
+  route();
+})();
+</script>
