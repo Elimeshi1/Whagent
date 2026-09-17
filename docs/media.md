@@ -6,7 +6,7 @@ Media never travels inside a message. You upload bytes and get an id; a message 
 
 ```python
 media_id = client.upload_media("invoice.pdf")
-client.send_document(to, media_id=media_id, filename="invoice.pdf")
+client.send_document(media_id=media_id, filename="invoice.pdf")
 ```
 
 Uploaded media expires after **30 days**.
@@ -35,7 +35,7 @@ Before uploading it also checks the type is [accepted](limits.md#accepted-mime-t
 Every media send accepts `file=` and does the upload for you:
 
 ```python
-client.send_image(to, file="cat.jpg", caption="look at this")
+client.send_image(file="cat.jpg", caption="look at this")
 ctx.reply_document(file="report.pdf", caption="Today's report")
 ```
 

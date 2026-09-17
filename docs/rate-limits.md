@@ -20,8 +20,8 @@ Exceeding a limit is HTTP 429 with `error.code` `130429`.
 On by default. Before each request the client checks that method's window and, if it is full, sleeps exactly long enough for the oldest call to age out. So a burst is paced rather than rejected:
 
 ```python
-for recipient_message in batch:                  # more than 12
-    client.send_text(recipient_message.sender, "...")   # the 13th waits, then goes
+for line in lines:                  # more than 12
+    client.send_text(line)          # the 13th waits, then goes
 ```
 
 It is per `Client` instance and thread-safe. Turn it off if you pace requests yourself, or run several processes against one token:

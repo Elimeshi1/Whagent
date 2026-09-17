@@ -10,7 +10,7 @@ The platform enforces it twice over:
 
 * `to` accepts a WhatsApp user identifier and nothing else. An agent identifier, a bare phone number, or any other shape comes back as **400**, code `131009`.
 * Even a well-formed user identifier that is not the creator comes back as **403**, code `131005`: *"The bot may only message its own API-enabled owner"*.
-* An agent's numeric id dressed up as a user (`user:<agent id>`) comes back as **500**, code `2` — not delivered, but the platform reports it as an internal error rather than a 403.
+* A `user:` identifier carrying an agent's id comes back as **500**, code `2`, and nothing is delivered.
 
 So: no other people, no customers, no broadcast lists.
 
@@ -44,42 +44,40 @@ ctx.reply(result)
 
 No. There is no group recipient in this API — only the one-to-one chat between you and your agent.
 
-## Then why do messages carry an identifier at all?
+## Do I need to pass a recipient?
 
-Fair question, and the answer is not "so you can choose a recipient". Three reasons:
-
-**1. It is not stable, so you must not hardcode it.** An identifier points at an *account*, not at a person, and it can change — a new phone number, or an account deleted and registered again. The manual is explicit: treat it as a conversation key, not a primary key, and prefer the `sender` of a **recent** message over one you stored months ago. If you paste today's identifier into your source code, one day your agent quietly stops reaching you.
-
-```python
-@agent.on_text
-def handle(ctx):
-    ctx.reply("hi")                       # replies to whoever wrote, always current
-
-# rather than
-client.send_text("user:50972923564215", "hi")   # a value that can expire
-```
-
-**2. The prefix tells you who wrote a quoted message.** This is the one place both forms really appear — `context.from` is `user:<id>` when you wrote the quoted message and `agent:<id>` when your agent did:
-
-```python
-@agent.on_text
-def handle(ctx):
-    if ctx.message.context and ctx.message.context.from_agent:
-        ...     # they replied to something the agent said
-```
-
-**3. It is the platform's generic participant format**, used in the same shape for `wa_id`, `recipient_id` and `input`. One format everywhere is simpler than a different field per role.
-
-One rule covers all of it: **take the identifier from an inbound message and send it back unchanged.** Never build one, never parse one, and never show one to a person — it is an internal handle, not a phone number.
-
-In practice the library does this for you, so you can leave the recipient out entirely:
+**No.** An agent has exactly one recipient, so every send works without one:
 
 ```python
 client.send_text("Hello")           # to whoever created this agent
 ctx.reply("Hello")                  # same, inside a handler
 ```
 
-It remembers the identifier from every poll and every send, and a client that has never polled looks it up by itself before the first send — so a send-only script needs nothing at all. See [the recipient](sending.md#the-recipient).
+The client remembers the identifier from every poll and every send, and a client that has never polled looks it up by itself before its first send — so a send-only script needs nothing at all. See [the recipient](sending.md#the-recipient).
+
+`to` is still accepted, as an option. If you pass it, take it from a **recent** inbound message (`message.sender`) and never hardcode it: an identifier points at an *account*, not a person, and it changes with a new phone number or a re-registered account.
+
+```python
+client.send_text(message.sender, "hi")          # fine: current
+client.send_text("user:50972923564215", "hi")   # a value that can expire
+```
+
+## Then what are the identifiers on a message for?
+
+Mostly for reading, not for addressing:
+
+* **Who wrote a quoted message.** `context.from` is `user:<id>` when you wrote the quoted message and `agent:<id>` when your agent did — `message.context.from_agent` gives you that as a `bool`:
+
+  ```python
+  @agent.on_text
+  def handle(ctx):
+      if ctx.message.context and ctx.message.context.from_agent:
+          ...     # they replied to something the agent said
+  ```
+
+* **One format everywhere.** `from`, `wa_id`, `recipient_id` and `input` all use the same `<type>:<id>` shape.
+
+Treat an identifier as an opaque internal handle: never build one, never parse one, and never show one to a person — it is not a phone number.
 
 ## Do I need a server, a domain or a webhook?
 

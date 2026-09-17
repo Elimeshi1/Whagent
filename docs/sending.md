@@ -24,12 +24,12 @@ client.send_image(file="cat.jpg")           # every send_* takes to=None
 
 When you leave it out, the client uses `client.recipient` — the identifier it last saw on a poll or a send. A client that has **never polled** finds it by itself before the first send, with one `GET /updates?offset=0&timeout=0` (`auto_discover=True`). A client that has polled never does that, since a second poll would replace a running loop; it raises `ValidationError` if nothing has revealed the recipient yet. `client.discover_recipient()` does the lookup explicitly.
 
-When you do pass `to`, it must be `user:<id>` — a WhatsApp user, and the agent's creator. An `agent:<id>`, a bare phone number or any other shape is rejected (HTTP 400, code `131009`); the library catches these before the request leaves. Take it from an inbound message and pass it back unchanged.
+Passing `to` is optional. When you do, it must be `user:<id>` — a WhatsApp user, and the agent's creator. An `agent:<id>`, a bare phone number or any other shape is rejected (HTTP 400, code `131009`); the library catches these before the request leaves. Take it from a recent inbound message and pass it back unchanged — never hardcode it.
 
 ## Text
 
 ```python
-client.send_text(to, "Hello", preview_url=True, reply_to="wamid.HBg...")
+client.send_text("Hello", preview_url=True, reply_to="wamid.HBg...")
 ```
 
 | Argument | |
@@ -45,12 +45,12 @@ Each media send takes **either** a `media_id` from an earlier upload, **or** a `
 ```python
 # upload once, send many times
 media_id = client.upload_media("logo.png")
-client.send_image(to, media_id=media_id, caption="our logo")
+client.send_image(media_id=media_id, caption="our logo")
 
 # or in one call
-client.send_image(to, file="cat.jpg", caption="look at this")
-client.send_image(to, file=open("cat.jpg", "rb"))
-client.send_image(to, file=photo_bytes, mime_type="image/jpeg")
+client.send_image(file="cat.jpg", caption="look at this")
+client.send_image(file=open("cat.jpg", "rb"))
+client.send_image(file=photo_bytes, mime_type="image/jpeg")
 ```
 
 | Method | Caption | Filename |
@@ -64,8 +64,8 @@ client.send_image(to, file=photo_bytes, mime_type="image/jpeg")
 Documents keep a filename, including its extension:
 
 ```python
-client.send_document(to, file="invoice.pdf")                      # filename: invoice.pdf
-client.send_document(to, media_id=mid, filename="invoice.pdf")    # set it yourself
+client.send_document(file="invoice.pdf")                      # filename: invoice.pdf
+client.send_document(media_id=mid, filename="invoice.pdf")    # set it yourself
 ```
 
 Formats, size caps and codec constraints are in [Limits and formats](limits.md). Uploading is covered in [Files and media](media.md).
@@ -73,7 +73,7 @@ Formats, size caps and codec constraints are in [Limits and formats](limits.md).
 ## Quoting a message
 
 ```python
-client.send_text(to, "On it", reply_to=message.id)
+client.send_text("On it", reply_to=message.id)
 client.reply(message, "On it")          # same thing, to the message's sender
 ctx.reply("On it", quote=True)          # from an Agent handler
 ```
@@ -85,7 +85,7 @@ Use a wamid from this conversation — an id from `GET /updates`, or one you got
 `send_message` takes any payload, so a type the platform adds later needs no library upgrade:
 
 ```python
-client.send_message(to, "text", {"body": "Hello", "preview_url": True})
+client.send_message(None, "text", {"body": "Hello", "preview_url": True})   # None: the known recipient
 ```
 
 ## Ordering

@@ -23,7 +23,7 @@ WhagentError
 from whagent import ForbiddenError, RateLimitError, ValidationError
 
 try:
-    client.send_text(to, body)
+    client.send_text(body)
 except ValidationError as exc:
     ...          # never left the process: bad recipient, over a length cap, bad MIME type
 except ForbiddenError:

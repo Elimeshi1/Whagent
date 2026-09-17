@@ -61,13 +61,14 @@ agent = Agent(token, offset_store=FileOffsetStore(".whagent-offset"))
 
 Every participant is written as `user:<id>` or `agent:<id>`. Treat the whole string as opaque: never parse it, never show it to a person, and never store it as a permanent key.
 
-It can change — a new phone number, or an account deleted and registered again. So the safe habit is always the same: **take the identifier off an inbound message and send it straight back.**
+It can change — a new phone number, or an account deleted and registered again. You rarely need to handle one anyway: an agent has a single recipient, so every send leaves `to` out and the client fills in the current identifier.
 
 ```python
-@agent.on_text
-def handle(ctx):
-    ctx.reply("on it")           # goes back to ctx.sender, always current
+client.send_text("on it")        # to the creator, always current
+ctx.reply("on it")               # same, inside a handler
 ```
+
+If you do pass `to`, take it from a recent inbound message rather than a stored value.
 
 The prefix earns its keep in one place: `context.from`, which tells you whether a quoted message was written by you (`user:`) or by your agent (`agent:`).
 
@@ -88,10 +89,10 @@ You never attach bytes to a message. Sending is upload → get an id → send a 
 
 ```python
 media_id = client.upload_media("invoice.pdf")     # step 1
-client.send_document(to, media_id=media_id)       # step 2
+client.send_document(media_id=media_id)           # step 2
 
 # one call that does both
-client.send_document(to, file="invoice.pdf")
+client.send_document(file="invoice.pdf")
 ```
 
 [Files and media →](media.md)
