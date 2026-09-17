@@ -499,9 +499,40 @@ def test_send_text_with_two_arguments_still_takes_an_explicit_recipient(client, 
     assert session.last_json["text"] == {"body": "hello"}
 
 
-def test_send_text_without_a_known_recipient_says_what_to_do(client, session):
-    with pytest.raises(ValidationError, match="discover_recipient"):
-        client.send_text("body with nowhere to go")
+def test_a_cold_client_finds_the_recipient_by_itself_then_sends(client, session):
+    session.queue(FakeResponse(200, update_body(contacts=[{"wa_id": "user:77"}])),
+                  send_ok(wa_id="user:77"))
+
+    client.send_text("no recipient given")
+
+    assert [r["url"].rsplit("/agent/v1", 1)[-1] for r in session.requests] == ["/updates", "/messages"]
+    assert session.last_json["to"] == "user:77"
+
+
+def test_a_cold_client_with_an_empty_buffer_explains_the_dead_end(client, session):
+    session.queue(FakeResponse(204))
+
+    with pytest.raises(ValidationError, match="Send it a message"):
+        client.send_text("nowhere to go")
+    assert len(session.requests) == 1, "it looks once, and does not retry blindly"
+
+
+def test_a_client_that_has_polled_will_not_poll_again_to_find_the_recipient(client, session):
+    session.queue(FakeResponse(204))
+    client.get_updates(offset=5)          # a poll loop is plausibly running now
+    before = len(session.requests)
+
+    with pytest.raises(ValidationError, match="replace a running one"):
+        client.send_text("nowhere to go")
+    assert len(session.requests) == before, "a poll here would kill the running one"
+
+
+def test_auto_discover_can_be_turned_off(session):
+    client = whagent.Client("t", session=session, rate_limit=False, max_retries=0,
+                            auto_discover=False)
+
+    with pytest.raises(ValidationError, match="discovery is off"):
+        client.send_text("nowhere to go")
     assert session.requests == []
 
 

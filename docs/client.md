@@ -6,8 +6,7 @@
 from whagent import Client
 
 with Client("<ACCESS_TOKEN>") as client:
-    client.discover_recipient()        # an agent has exactly one correspondent
-    client.send_text("Hello!")
+    client.send_text("Hello!")         # an agent has exactly one recipient
 ```
 
 ## Construction
@@ -23,6 +22,7 @@ Client(
     rate_limit=True,
     retry_send_on_server_error=False,
     validate=True,
+    auto_discover=True,
     session=None,
     user_agent=None,
 )
@@ -38,6 +38,7 @@ Client(
 | `rate_limit` | Pace requests to stay inside the documented caps instead of collecting 429s. See [Rate limits](rate-limits.md). |
 | `retry_send_on_server_error` | Retry a send after a 500 or a dropped connection. **Off by default** — those leave delivery unknown, so a retry may send twice. |
 | `validate` | Local checks on recipients, length caps, MIME types and media sizes before a request leaves. |
+| `auto_discover` | Let the first send find the recipient by itself, on a client that has never polled. Never runs once the client has polled, so it cannot replace a running poll loop. |
 | `session` | Bring your own `requests.Session` for connection reuse, proxies or custom TLS. |
 | `user_agent` | Override the `User-Agent` header. |
 
@@ -55,7 +56,7 @@ Client(
 | `reply(message, body, **kwargs)` | text back to a `Message`'s sender, quoting it |
 
 | `recipient` | the creator's identifier, as last seen |
-| `discover_recipient(refresh=False)` | find it with one poll, for send-only scripts |
+| `discover_recipient(refresh=False)` | look it up explicitly, with one poll |
 
 Because an agent may only message its creator, `to` is optional on every send — see [the recipient](sending.md#the-recipient).
 

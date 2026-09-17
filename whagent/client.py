@@ -62,6 +62,10 @@ class Client:
         retry_send_on_server_error: Retry ``POST /messages`` after a 500 or a
             dropped connection.  Off by default: those leave it unknown whether
             the message was sent, so a retry may deliver it twice.
+        auto_discover: Let a send find the recipient by itself when this
+            client has never polled — one ``GET /updates`` before the first
+            send of a send-only script.  Never done once the client has
+            polled, so it cannot replace a running poll loop.
         validate: Check lengths, recipients and media locally before sending.
         session: A pre-built :class:`requests.Session` (for connection reuse,
             proxies or custom TLS settings).
@@ -79,6 +83,7 @@ class Client:
         rate_limit: bool = True,
         retry_send_on_server_error: bool = False,
         validate: bool = True,
+        auto_discover: bool = True,
         session: requests.Session | None = None,
         user_agent: str | None = None,
     ) -> None:
@@ -94,12 +99,14 @@ class Client:
         self.backoff_base = backoff_base
         self.backoff_max = backoff_max
         self.validate = validate
+        self.auto_discover = auto_discover
         self.retry_send_on_server_error = retry_send_on_server_error
         self._session = session or requests.Session()
         self._owns_session = session is None
         self._user_agent = user_agent or f"whagent/{__version__}"
         self._limiter = SlidingWindowLimiter(_limits.RATE_LIMITS) if rate_limit else None
         self._recipient: str | None = None
+        self._polls = 0
 
     # ------------------------------------------------------------------ #
     # Messages
@@ -347,6 +354,7 @@ class Client:
         if offset is not None:
             params["offset"] = max(0, int(offset))
 
+        self._polls += 1
         data = self._request(
             "GET",
             "/updates",
@@ -545,14 +553,35 @@ class Client:
     # ------------------------------------------------------------------ #
 
     def _resolve_recipient(self, to: str | None) -> str:
-        """Fill in the recipient when a send left it out."""
+        """Fill in the recipient when a send left it out.
+
+        On a client that has never polled, this looks the recipient up once.
+        On one that has, it does not: a poll here would replace a running poll
+        loop, and losing inbound messages is worse than a clear error.
+        """
         if to is not None:
             return to
         if self._recipient:
             return self._recipient
+
+        if self.auto_discover and self._polls == 0:
+            if self.discover_recipient():
+                return self._recipient  # type: ignore[return-value]
+            raise ValidationError(
+                "No recipient known, and the update buffer is empty — this agent has "
+                "no traffic to learn from. Send it a message from WhatsApp once, or "
+                "pass to='user:<id>'."
+            )
+
+        reason = (
+            "This client has already polled, so it will not poll again to find out — "
+            "a second poll would replace a running one."
+            if self._polls
+            else "Automatic discovery is off."
+        )
         raise ValidationError(
-            "No recipient known yet. Pass to='user:<id>' from an inbound message, "
-            "or call discover_recipient() once before sending."
+            f"No recipient known yet. {reason} Pass to='user:<id>' from an inbound "
+            "message, or call discover_recipient() yourself."
         )
 
     def _learn_recipient(self, update: Update) -> None:

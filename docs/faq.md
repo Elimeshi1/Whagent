@@ -67,7 +67,7 @@ client.send_text("Hello")           # to whoever created this agent
 ctx.reply("Hello")                  # same, inside a handler
 ```
 
-It remembers the identifier from every poll and every send. A send-only script that has never polled asks once with `client.discover_recipient()`. See [the recipient](sending.md#the-recipient).
+It remembers the identifier from every poll and every send, and a client that has never polled looks it up by itself before the first send — so a send-only script needs nothing at all. See [the recipient](sending.md#the-recipient).
 
 ## Do I need a server, a domain or a webhook?
 
