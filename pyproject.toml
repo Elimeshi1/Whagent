@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "whagent"
+description = "A simple Python library for the WhatsApp Agent Platform API"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.9"
+dynamic = ["version"]
+keywords = ["whatsapp", "agent", "bot", "messaging", "api"]
+dependencies = ["requests>=2.25"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Communications :: Chat",
+    "Typing :: Typed",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+
+[tool.setuptools.dynamic]
+version = { attr = "whagent.__version__" }
+
+[tool.setuptools.packages.find]
+include = ["whagent*"]
+
+[tool.setuptools.package-data]
+whagent = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
