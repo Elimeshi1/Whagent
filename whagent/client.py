@@ -99,6 +99,7 @@ class Client:
         self._owns_session = session is None
         self._user_agent = user_agent or f"whagent/{__version__}"
         self._limiter = SlidingWindowLimiter(_limits.RATE_LIMITS) if rate_limit else None
+        self._recipient: str | None = None
 
     # ------------------------------------------------------------------ #
     # Messages
@@ -106,21 +107,30 @@ class Client:
 
     def send_text(
         self,
-        to: str,
-        body: str,
+        to_or_body: str,
+        body: str | None = None,
         *,
         preview_url: bool = False,
         reply_to: str | None = None,
     ) -> SendResult:
         """Send a text message (max 4096 characters).
 
+        An agent has exactly one correspondent, so the recipient is optional::
+
+            client.send_text("Hello")                  # to the known recipient
+            client.send_text(message.sender, "Hello")  # explicit
+
+        With a single argument it is the message body, unless it looks like a
+        participant identifier. See :attr:`recipient` for where the implicit
+        one comes from.
+
         Args:
-            to: Recipient as ``user:<id>`` — the ``sender`` of an inbound
-                message, passed back unchanged.
-            body: The message text.
+            to_or_body: The message body, or the recipient when ``body`` follows.
+            body: The message text, when a recipient was given first.
             preview_url: Render a link preview for the first URL in the body.
             reply_to: wamid of a message to quote.
         """
+        to, body = _split_recipient(to_or_body, body)
         if self.validate:
             _check_length("text.body", body, _limits.TEXT_BODY_MAX)
         payload: dict[str, Any] = {"body": body}
@@ -130,7 +140,7 @@ class Client:
 
     def send_image(
         self,
-        to: str,
+        to: str | None = None,
         *,
         media_id: str | None = None,
         file: Any = None,
@@ -146,7 +156,7 @@ class Client:
 
     def send_audio(
         self,
-        to: str,
+        to: str | None = None,
         *,
         media_id: str | None = None,
         file: Any = None,
@@ -160,7 +170,7 @@ class Client:
 
     def send_video(
         self,
-        to: str,
+        to: str | None = None,
         *,
         media_id: str | None = None,
         file: Any = None,
@@ -176,7 +186,7 @@ class Client:
 
     def send_document(
         self,
-        to: str,
+        to: str | None = None,
         *,
         media_id: str | None = None,
         file: Any = None,
@@ -198,7 +208,7 @@ class Client:
 
     def send_sticker(
         self,
-        to: str,
+        to: str | None = None,
         *,
         media_id: str | None = None,
         file: Any = None,
@@ -212,7 +222,7 @@ class Client:
 
     def send_message(
         self,
-        to: str,
+        to: str | None,
         type: str,
         payload: Mapping[str, Any],
         *,
@@ -221,8 +231,10 @@ class Client:
         """Send any message type.
 
         The typed helpers above cover every sendable type; use this for a
-        payload shape the platform adds later.
+        payload shape the platform adds later.  Pass ``None`` as ``to`` to use
+        the known :attr:`recipient`.
         """
+        to = self._resolve_recipient(to)
         if self.validate:
             _check_recipient(to)
             if type == "reaction":
@@ -249,12 +261,59 @@ class Client:
             json=body,
             retry_unknown=self.retry_send_on_server_error,
         )
-        return SendResult.from_dict(data or {})
+        result = SendResult.from_dict(data or {})
+        if result.wa_id:
+            self._recipient = result.wa_id
+        return result
 
     def reply(self, message: Message, body: str, **kwargs: Any) -> SendResult:
         """Reply to an inbound message, quoting it."""
         kwargs.setdefault("reply_to", message.id)
         return self.send_text(message.sender, body, **kwargs)
+
+    # ------------------------------------------------------------------ #
+    # The recipient
+    # ------------------------------------------------------------------ #
+
+    @property
+    def recipient(self) -> str | None:
+        """The creator's identifier, as last seen by this client.
+
+        An agent may only message its creator, so there is only ever one
+        recipient, and every poll and every send reveals it.  It is learned
+        from — in order of freshness — an inbound message's sender, a
+        receipt's ``recipient_id``, a contact's ``wa_id``, or the ``wa_id``
+        a send returns.  Omit ``to`` on any send to use it.
+
+        ``None`` until something has revealed it; see
+        :meth:`discover_recipient`.
+        """
+        return self._recipient
+
+    def discover_recipient(self, *, refresh: bool = False) -> str | None:
+        """Find the creator's identifier, polling once if it is not known yet.
+
+        For a send-only script — a cron job, a deploy notifier — that has
+        never polled::
+
+            client.discover_recipient()
+            client.send_text("Deploy finished")
+
+        The poll is a real ``GET /updates`` with ``timeout=0``, so do not call
+        this while a poll loop is running for the same agent: the newer poll
+        would replace the running one, which then fails with
+        :class:`~whagent.errors.PollReplacedError`.  Inside an
+        :class:`~whagent.Agent` handler the identifier is already known.
+
+        Args:
+            refresh: Poll again even when an identifier is already known.
+        """
+        if self._recipient and not refresh:
+            return self._recipient
+        # offset=0 reads the retained buffer, so this finds an identifier even
+        # when nothing has arrived recently. Nothing is consumed by reading.
+        self.get_updates(offset=0, limit=100, timeout=0)
+        return self._recipient
 
     # ------------------------------------------------------------------ #
     # Updates
@@ -297,7 +356,11 @@ class Client:
             # so an ordinary delay never looks like a failure.
             read_timeout=params["timeout"] + max(self.timeout, 15.0),
         )
-        return Update.from_dict(data) if data is not None else None
+        if data is None:
+            return None
+        update = Update.from_dict(data)
+        self._learn_recipient(update)
+        return update
 
     def poll_updates(
         self,
@@ -481,6 +544,32 @@ class Client:
     # Internals
     # ------------------------------------------------------------------ #
 
+    def _resolve_recipient(self, to: str | None) -> str:
+        """Fill in the recipient when a send left it out."""
+        if to is not None:
+            return to
+        if self._recipient:
+            return self._recipient
+        raise ValidationError(
+            "No recipient known yet. Pass to='user:<id>' from an inbound message, "
+            "or call discover_recipient() once before sending."
+        )
+
+    def _learn_recipient(self, update: Update) -> None:
+        """Remember the creator's identifier from an update.
+
+        Freshest first: an inbound message's sender beats a receipt, which
+        beats a contact entry.
+        """
+        for candidate in (
+            *(message.sender for message in update.messages),
+            *(status.recipient_id for status in update.statuses),
+            *(contact.wa_id for contact in update.contacts),
+        ):
+            if candidate and candidate.startswith("user:"):
+                self._recipient = candidate
+                return
+
     def _send_media(
         self,
         to: str,
@@ -594,6 +683,24 @@ class Client:
 
 def _clamp(value: int, low: int, high: int) -> int:
     return max(low, min(high, int(value)))
+
+
+def _split_recipient(first: Any, second: Any) -> tuple[str | None, Any]:
+    """Interpret ``send_text``'s positional arguments.
+
+    ``(body,)`` means the known recipient; ``(to, body)`` is explicit.  A lone
+    argument that looks like a participant identifier is treated as a
+    recipient, so a missing body is reported as such rather than silently
+    sending the identifier as text.
+    """
+    if second is not None:
+        return first, second
+    if isinstance(first, str) and (first.startswith("user:") or first.startswith("agent:")):
+        raise ValidationError(
+            f"send_text({first!r}) has a recipient but no message body. "
+            "Call send_text(to, body), or send_text(body) to use the known recipient."
+        )
+    return None, first
 
 
 def _check_recipient(to: Any) -> None:

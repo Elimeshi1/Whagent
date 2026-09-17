@@ -194,6 +194,11 @@ def error_from_response(status: int, body: Any, headers: Any = None) -> APIError
     if code == 100 and status == 404:
         cls = MediaNotFoundError
 
+    if code == 1752041 and not details:
+        # The API says only "Duplicate request", which does not hint at the cause.
+        details = ("another poll for this agent replaced this one — "
+                   "run only one poll loop per token")
+
     kwargs: dict[str, Any] = dict(
         status=status,
         code=code,

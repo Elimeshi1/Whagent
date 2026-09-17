@@ -110,11 +110,12 @@ If you only want to push a message — from a cron job, a script, anywhere — s
 from whagent import Client
 
 with Client(os.environ["WHATSAPP_AGENT_TOKEN"]) as client:
-    result = client.send_text("user:50972923564215", "Deploy finished ✅")
+    client.discover_recipient()                       # who am I talking to?
+    result = client.send_text("Deploy finished ✅")
     print(result.message_id)
 ```
 
-The recipient is the identifier from a message you received. Don't hardcode it permanently — [it can change](faq.md).
+You never name the recipient: an agent has only one, and `discover_recipient()` finds it in a single poll. Don't hardcode an identifier — [it can change](faq.md).
 
 ## Next
 

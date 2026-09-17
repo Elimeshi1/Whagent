@@ -5,7 +5,7 @@
 An agent can send `text`, `image`, `audio`, `video`, `document` and `sticker`. Reactions are **receive-only**.
 
 ```python
-result = client.send_text("user:50972923564215", "Hello! How can I help you?")
+result = client.send_text("Hello! How can I help you?")
 result.message_id     # "wamid.HBg..." — record this; it identifies the message in receipts
 result.wa_id          # "user:50972923564215"
 ```

@@ -77,8 +77,9 @@ def on_image(ctx):
 from whagent import Client
 
 with Client(token) as client:
-    client.send_text("user:50972923564215", "Hello!")
-    client.send_image("user:50972923564215", file="cat.jpg", caption="look at this")
+    client.discover_recipient()                 # an agent has exactly one
+    client.send_text("Hello!")
+    client.send_image(file="cat.jpg", caption="look at this")
     update = client.get_updates(offset=1287, timeout=25)
 ```
 

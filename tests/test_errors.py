@@ -88,3 +88,17 @@ def test_every_error_is_a_whagent_error():
     assert issubclass(errors.ValidationError, errors.WhagentError)
     assert issubclass(errors.ValidationError, ValueError)
     assert issubclass(errors.TransportError, errors.WhagentError)
+
+
+def test_a_replaced_poll_explains_itself():
+    # The API sends only "(#1752041) Duplicate request".
+    error = errors.error_from_response(409, error_body(1752041, "(#1752041) Duplicate request"))
+
+    assert isinstance(error, errors.PollReplacedError)
+    assert "one poll loop per token" in str(error)
+
+
+def test_a_supplied_detail_is_not_overwritten():
+    error = errors.error_from_response(409, error_body(1752041, "boom", details="something specific"))
+
+    assert error.details == "something specific"

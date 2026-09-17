@@ -428,3 +428,138 @@ def test_the_rate_limiter_paces_requests(session, monkeypatch):
         client.send_text("user:5", "hi")
 
     assert len(slept) == 1 and slept[0] == pytest.approx(60.0)
+
+
+# --------------------------------------------------------------------- #
+# The implicit recipient
+# --------------------------------------------------------------------- #
+
+def test_recipient_is_unknown_until_something_reveals_it(client):
+    assert client.recipient is None
+
+
+def test_a_poll_learns_the_recipient_from_an_inbound_message(client, session):
+    session.queue(FakeResponse(200, update_body(messages=[text_message(sender="user:77")])))
+
+    client.get_updates(offset=1)
+
+    assert client.recipient == "user:77"
+
+
+def test_a_poll_learns_the_recipient_from_a_receipt(client, session):
+    session.queue(FakeResponse(200, update_body(statuses=[
+        {"id": "wamid.OUT", "status": "delivered", "recipient_id": "user:88", "timestamp": "1"},
+    ])))
+
+    client.get_updates(offset=1)
+
+    assert client.recipient == "user:88"
+
+
+def test_a_poll_learns_the_recipient_from_a_contact_alone(client, session):
+    session.queue(FakeResponse(200, update_body(
+        statuses=[{"id": "w", "status": "read", "recipient_id": "", "timestamp": "1"}],
+        contacts=[{"wa_id": "user:99"}],
+    )))
+
+    client.get_updates(offset=1)
+
+    assert client.recipient == "user:99"
+
+
+def test_an_inbound_sender_is_preferred_over_a_receipt(client, session):
+    session.queue(FakeResponse(200, update_body(
+        messages=[text_message(sender="user:fresh")],
+        statuses=[{"id": "w", "status": "read", "recipient_id": "user:stale", "timestamp": "1"}],
+        contacts=[{"wa_id": "user:older"}],
+    )))
+
+    client.get_updates(offset=1)
+
+    assert client.recipient == "user:fresh"
+
+
+def test_send_text_with_one_argument_uses_the_known_recipient(client, session):
+    session.queue(FakeResponse(200, update_body(messages=[text_message(sender="user:77")])),
+                  send_ok(wa_id="user:77"))
+    client.get_updates(offset=1)
+
+    client.send_text("just the body")
+
+    assert session.last_json["to"] == "user:77"
+    assert session.last_json["text"] == {"body": "just the body"}
+
+
+def test_send_text_with_two_arguments_still_takes_an_explicit_recipient(client, session):
+    session.queue(send_ok())
+
+    client.send_text("user:5", "hello")
+
+    assert session.last_json["to"] == "user:5"
+    assert session.last_json["text"] == {"body": "hello"}
+
+
+def test_send_text_without_a_known_recipient_says_what_to_do(client, session):
+    with pytest.raises(ValidationError, match="discover_recipient"):
+        client.send_text("body with nowhere to go")
+    assert session.requests == []
+
+
+def test_a_lone_identifier_is_reported_as_a_missing_body(client, session):
+    with pytest.raises(ValidationError, match="no message body"):
+        client.send_text("user:50972923564215")
+    assert session.requests == []
+
+
+def test_media_sends_also_take_the_implicit_recipient(client, session):
+    session.queue(FakeResponse(200, update_body(messages=[text_message(sender="user:77")])),
+                  FakeResponse(200, {"id": "media-1"}), send_ok(wa_id="user:77"))
+    client.get_updates(offset=1)
+
+    client.send_image(file=b"\x89PNG-bytes", mime_type="image/png", caption="hi")
+
+    assert session.last_json["to"] == "user:77"
+    assert session.last_json["image"] == {"id": "media-1", "caption": "hi"}
+
+
+def test_send_message_accepts_none_as_the_recipient(client, session):
+    session.queue(FakeResponse(200, update_body(messages=[text_message(sender="user:77")])), send_ok())
+    client.get_updates(offset=1)
+
+    client.send_message(None, "text", {"body": "raw"})
+
+    assert session.last_json["to"] == "user:77"
+
+
+def test_a_send_response_reveals_the_recipient(client, session):
+    session.queue(send_ok(wa_id="user:routed"))
+
+    client.send_text("user:routed", "hi")
+
+    assert client.recipient == "user:routed"
+
+
+def test_discover_recipient_polls_once_then_caches(client, session):
+    session.queue(FakeResponse(200, update_body(contacts=[{"wa_id": "user:77"}])))
+
+    assert client.discover_recipient() == "user:77"
+    assert len(session.requests) == 1
+    assert session.requests[0]["params"]["offset"] == 0
+
+    assert client.discover_recipient() == "user:77"
+    assert len(session.requests) == 1, "a known recipient needs no request"
+
+
+def test_discover_recipient_can_be_forced_to_poll_again(client, session):
+    session.queue(FakeResponse(200, update_body(contacts=[{"wa_id": "user:old"}])),
+                  FakeResponse(200, update_body(contacts=[{"wa_id": "user:new"}])))
+
+    client.discover_recipient()
+    assert client.discover_recipient(refresh=True) == "user:new"
+    assert len(session.requests) == 2
+
+
+def test_discover_recipient_returns_none_on_an_empty_buffer(client, session):
+    session.queue(FakeResponse(204))
+
+    assert client.discover_recipient() is None

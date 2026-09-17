@@ -6,7 +6,8 @@
 from whagent import Client
 
 with Client("<ACCESS_TOKEN>") as client:
-    client.send_text("user:50972923564215", "Hello!")
+    client.discover_recipient()        # an agent has exactly one correspondent
+    client.send_text("Hello!")
 ```
 
 ## Construction
@@ -50,8 +51,13 @@ Client(
 | `send_image(to, media_id=\| file=, mime_type=None, caption=None, reply_to=None)` | |
 | `send_video(...)`, `send_audio(...)`, `send_sticker(...)` | |
 | `send_document(..., filename=None)` | |
-| `send_message(to, type, payload, reply_to=None)` | any payload shape |
+| `send_message(to, type, payload, reply_to=None)` | any payload shape; `to=None` uses the known recipient |
 | `reply(message, body, **kwargs)` | text back to a `Message`'s sender, quoting it |
+
+| `recipient` | the creator's identifier, as last seen |
+| `discover_recipient(refresh=False)` | find it with one poll, for send-only scripts |
+
+Because an agent may only message its creator, `to` is optional on every send — see [the recipient](sending.md#the-recipient).
 
 ### Updates — [`GET /updates`](receiving.md)
 

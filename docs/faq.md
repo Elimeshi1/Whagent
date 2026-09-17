@@ -60,6 +60,15 @@ def handle(ctx):
 
 One rule covers all of it: **take the identifier from an inbound message and send it back unchanged.** Never build one, never parse one, and never show one to a person — it is an internal handle, not a phone number.
 
+In practice the library does this for you, so you can leave the recipient out entirely:
+
+```python
+client.send_text("Hello")           # to whoever created this agent
+ctx.reply("Hello")                  # same, inside a handler
+```
+
+It remembers the identifier from every poll and every send. A send-only script that has never polled asks once with `client.discover_recipient()`. See [the recipient](sending.md#the-recipient).
+
 ## Do I need a server, a domain or a webhook?
 
 No. The agent **polls** — it opens a request to WhatsApp and waits up to 25 seconds for something to arrive. Nothing connects to you, so it runs behind any firewall, on a laptop, in a container, with only outbound HTTPS. See [How it works](concepts.md).
