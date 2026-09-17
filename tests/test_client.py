@@ -167,6 +167,17 @@ def test_poll_updates_tracks_the_offset_and_skips_empty_polls(client, session):
     assert saved == [11, 12]
 
 
+def test_poll_updates_saves_the_offset_only_after_the_update_is_handled(client, session):
+    session.queue(FakeResponse(200, update_body(messages=[text_message()], next_offset=11)))
+    saved: list[int] = []
+
+    polls = client.poll_updates(offset=10, max_polls=1, on_offset=saved.append)
+    next(polls)
+    assert saved == []  # still being handled: a crash now must re-read it
+    assert list(polls) == []
+    assert saved == [11]
+
+
 def test_poll_updates_backs_off_and_reuses_the_offset_after_a_rate_limit(client, session):
     session.queue(
         FakeResponse(429, error_body(130429), headers={"Retry-After": "0"}),
@@ -352,6 +363,22 @@ def test_429_is_retried_up_to_max_retries(session):
         client.send_text("user:5", "hi")
     assert excinfo.value.retry_after == 0
     assert len(session.requests) == 2
+
+
+def test_a_429_without_retry_after_backs_off_for_seconds_not_milliseconds(session, monkeypatch):
+    client = whagent.Client("t", session=session, rate_limit=False, max_retries=2)
+    slept: list[float] = []
+    monkeypatch.setattr(whagent.client.time, "sleep", slept.append)
+    session.queue(
+        FakeResponse(429, error_body(130429)),
+        FakeResponse(429, error_body(130429)),
+        send_ok(),
+    )
+
+    client.send_text("user:5", "hi")
+
+    assert len(slept) == 2
+    assert 5 <= slept[0] < 6 and 10 <= slept[1] < 11
 
 
 def test_a_500_on_send_is_not_retried_by_default(session):

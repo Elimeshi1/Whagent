@@ -38,6 +38,9 @@ _EXTRA_EXTENSIONS = {
     ".ogg": "audio/ogg",
 }
 
+#: Smallest first backoff after a 429 that carried no ``Retry-After``.
+_RATE_LIMIT_BACKOFF_BASE = 5.0
+
 
 class Client:
     """Talks to ``https://api.whatsapp.com/agent/v1``.
@@ -56,7 +59,8 @@ class Client:
         timeout: Default read timeout in seconds for ordinary requests.  Polls
             extend it past the long-poll timeout automatically.
         max_retries: Retries after a retryable failure (429, 503/131016, and —
-            where the outcome is knowable — 500 and network errors).
+            where the outcome is knowable — 500 and network errors).  A 429
+            without ``Retry-After`` backs off from at least 5 seconds.
         rate_limit: Keep requests under the documented per-method caps by
             sleeping rather than letting the API return 429.
         retry_send_on_server_error: Retry ``POST /messages`` after a 500 or a
@@ -403,17 +407,20 @@ class Client:
             except (RateLimitError, ServerError) as exc:
                 # Reuse the prior offset and back off; nothing was consumed.
                 failures += 1
-                self._sleep_backoff(failures - 1, getattr(exc, "retry_after", None))
+                self._sleep_backoff(failures - 1, getattr(exc, "retry_after", None),
+                                    rate_limited=isinstance(exc, RateLimitError))
                 continue
             failures = 0
             if update is None:
                 continue  # 204: no next_offset, re-poll from the same offset.
+            if update:
+                yield update
+            # Persist only once the consumer has finished with the update, so a
+            # crash while handling it re-reads it on restart.
             if update.next_offset is not None:
                 offset = update.next_offset
                 if on_offset is not None:
                     on_offset(update.next_offset)
-            if update:
-                yield update
 
     # ------------------------------------------------------------------ #
     # Read receipts and typing indicator
@@ -675,7 +682,8 @@ class Client:
             retryable = error.retryable and (retry_unknown or not unknown_outcome)
             if not retryable or attempt >= self.max_retries:
                 raise error
-            self._sleep_backoff(attempt, getattr(error, "retry_after", None))
+            self._sleep_backoff(attempt, getattr(error, "retry_after", None),
+                                rate_limited=isinstance(error, RateLimitError))
             attempt += 1
 
     def _send(self, method: str, url: str, *, read_timeout: float | None = None, **kwargs: Any) -> Any:
@@ -696,11 +704,16 @@ class Client:
         except requests.RequestException as exc:  # pragma: no cover - network dependent
             raise TransportError(f"{method} {url} failed: {exc}") from exc
 
-    def _sleep_backoff(self, attempt: int, retry_after: float | None = None) -> None:
+    def _sleep_backoff(
+        self, attempt: int, retry_after: float | None = None, *, rate_limited: bool = False
+    ) -> None:
         if retry_after is not None:
             delay = min(retry_after, self.backoff_max)
         else:
-            delay = min(self.backoff_max, self.backoff_base * (2 ** attempt))
+            # The API sends no Retry-After, and its counters span 60 seconds, so
+            # a sub-second backoff after a 429 would only collect more 429s.
+            base = max(self.backoff_base, _RATE_LIMIT_BACKOFF_BASE) if rate_limited else self.backoff_base
+            delay = min(self.backoff_max, base * (2 ** attempt))
             delay += random.uniform(0, delay * 0.1)  # jitter, to spread retries out
         time.sleep(delay)
 

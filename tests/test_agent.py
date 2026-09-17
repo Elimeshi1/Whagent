@@ -171,6 +171,18 @@ def test_mark_read_without_typing(client, session):
     assert "typing_indicator" not in session.last_json
 
 
+def test_a_plain_receipt_is_sent_after_the_handlers_run(client, session):
+    agent = Agent(client=client, typing=False, mark_read=True)
+    session.queue(send_ok(), FakeResponse(200, {"success": True}))
+    agent.on_text(lambda ctx: ctx.reply("hi"))
+
+    agent.dispatch(make_update(text_message()))
+
+    send_call, status_call = session.requests
+    assert send_call["url"].endswith("/messages")
+    assert status_call["url"].endswith("/statuses")
+
+
 def test_no_receipt_is_sent_when_nothing_handles_the_message(client, session):
     agent = Agent(client=client, typing=True)
     agent.on_message("image")(lambda ctx: None)

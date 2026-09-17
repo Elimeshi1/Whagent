@@ -131,9 +131,11 @@ class Agent:
     Args:
         token: The agent's API token.  Omit it when passing ``client``.
         client: An existing :class:`~whagent.Client`.
-        mark_read: Mark each dispatched message as read.
+        mark_read: Mark each dispatched message as read — after its handlers
+            have run, unless ``typing`` is on.
         typing: Show a typing indicator while a handler runs.  Implies
-            ``mark_read``, since both travel in the same call.
+            ``mark_read``, since both travel in the same call, so the receipt
+            is sent before the handler.
         start: Where the first poll begins when no offset is stored —
             ``"new"`` for traffic that arrives from now on, or ``"beginning"``
             to replay up to 30 days of backlog.
@@ -288,9 +290,17 @@ class Agent:
             if not handlers:
                 continue
             context = Context(client=self.client, message=message, update=update)
-            self._acknowledge(message)
+            # The platform drops a message from the buffer once it is marked
+            # read. A typing indicator has to go out before the handler, and it
+            # carries the receipt with it; a plain receipt waits until the
+            # handlers are done, so a crash mid-handler leaves the message
+            # unread and replayable.
+            if self.typing:
+                self._acknowledge(message)
             for handler in handlers:
                 self._call(handler, (context,), context)
+            if not self.typing:
+                self._acknowledge(message)
 
     # ------------------------------------------------------------------ #
     # Internals
