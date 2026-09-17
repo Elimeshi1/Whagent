@@ -26,7 +26,7 @@ export WHATSAPP_AGENT_TOKEN='...'
 pip install whagent
 ```
 
-Python 3.9 or newer. The only runtime dependency is [`requests`](https://pypi.org/project/requests/).
+Python 3.9 or newer. The only runtime dependency is [`requests`](https://pypi.org/project/requests/). The package is [`whagent` on PyPI](https://pypi.org/project/whagent/).
 
 ## 3. Write the agent
 

@@ -1,5 +1,10 @@
 # whagent
 
+[![PyPI](https://img.shields.io/pypi/v/whagent)](https://pypi.org/project/whagent/)
+[![Python](https://img.shields.io/pypi/pyversions/whagent)](https://pypi.org/project/whagent/)
+[![Docs](https://img.shields.io/badge/docs-elimeshi1.github.io-blue)](https://elimeshi1.github.io/Whagent/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](https://github.com/Elimeshi1/Whagent/blob/main/LICENSE)
+
 A small Python library for the [WhatsApp Agent Platform](https://www.whatsapp.com/developer/WhatsApp-Agent-Platform-Developer-Manual.pdf) API (`https://api.whatsapp.com/agent/v1`).
 
 It covers every endpoint in version 1 of the developer manual — sending, long-poll receiving, read receipts, the typing indicator and media — and adds what you would otherwise write yourself: typed responses, offset tracking, retries with backoff, client-side rate limiting and local validation against the documented caps.
@@ -22,7 +27,7 @@ agent.run()
 pip install whagent
 ```
 
-Python 3.9+. The only runtime dependency is `requests`.
+Python 3.9+. The only runtime dependency is `requests`. Upgrade with `pip install -U whagent`; releases are listed on [PyPI](https://pypi.org/project/whagent/).
 
 ## Documentation
 

@@ -23,7 +23,7 @@ That is a complete agent. It polls for your messages, marks them read, shows a t
 pip install whagent
 ```
 
-Python 3.9 or newer. The only runtime dependency is `requests`.
+Python 3.9 or newer. The only runtime dependency is `requests`. Upgrade with `pip install -U whagent`; releases are listed on [PyPI](https://pypi.org/project/whagent/).
 
 ## First, the one rule that shapes everything
 
