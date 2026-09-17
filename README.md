@@ -30,14 +30,15 @@ Python 3.9+. The only runtime dependency is `requests`.
 
 | | |
 |---|---|
-| [Getting started](docs/getting-started.md) | Install, get an API token, run your first agent |
-| [Concepts](docs/concepts.md) | Polling, identifiers, what an agent may do |
-| [Agent](docs/agent.md) | Handlers, `Context`, the poll loop, offset persistence |
-| [Client](docs/client.md) | Construction, configuration, lifecycle |
-| [Sending messages](docs/sending.md) | `POST /messages` |
-| [Receiving updates](docs/receiving.md) | `GET /updates` and offsets |
+| [Getting started](docs/getting-started.md) | Create an agent, get a token, run your first reply |
+| [How it works](docs/concepts.md) | Polling, offsets, identifiers — the model in six pieces |
+| [Questions and answers](docs/faq.md) | Who it can message, what happens offline, running two agents |
+| [Sending messages](docs/sending.md) | `POST /messages` — every type, captions, quotes |
+| [Receiving messages](docs/receiving.md) | `GET /updates` and offsets |
+| [Files and media](docs/media.md) | Upload, download, delete |
 | [Receipts and typing](docs/receipts.md) | `POST /statuses` |
-| [Media](docs/media.md) | Upload, download, delete |
+| [Agent](docs/agent.md) | Handlers, `Context`, the run loop |
+| [Client](docs/client.md) | One method per endpoint |
 | [Models](docs/models.md) | `Update`, `Message`, `Status`, `Media` |
 | [Errors](docs/errors.md) | Exception hierarchy, codes, retry policy |
 | [Rate limits](docs/rate-limits.md) | Per-method caps and the built-in limiter |

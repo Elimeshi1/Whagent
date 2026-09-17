@@ -8,7 +8,7 @@ from whagent import Message, Status, Update, Media, SendResult, Contact
 
 ## Update
 
-One response from `GET /updates`. See [Receiving updates](receiving.md).
+One response from `GET /updates`. See [Receiving messages](receiving.md).
 
 | Attribute | Type | |
 |---|---|---|
@@ -87,7 +87,7 @@ Returned by every send.
 
 ## Media
 
-Metadata from `GET /media/<id>`. See [Media](media.md).
+Metadata from `GET /media/<id>`. See [Files and media](media.md).
 
 | Attribute | |
 |---|---|
@@ -108,7 +108,7 @@ participant_type("509...")        # None
 is_user(message.sender)           # True
 ```
 
-See [Concepts → participant identifiers](concepts.md#3-participant-identifiers) for why they should never be used as a primary key.
+See [How it works → participant identifiers](concepts.md#identifiers-name-accounts-and-accounts-change) for why they should never be used as a primary key.
 
 ## Unknown types
 

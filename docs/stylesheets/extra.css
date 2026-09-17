@@ -1,0 +1,167 @@
+/* whagent documentation — palette, typography and landing page.
+   Material exposes its design tokens as CSS variables; everything below
+   redefines those rather than fighting the theme's own rules. */
+
+/* ---------- palette ---------- */
+
+[data-md-color-primary="custom"] {
+  --md-primary-fg-color:        #103126;
+  --md-primary-fg-color--light: #1B4B3B;
+  --md-primary-fg-color--dark:  #09201A;
+  --md-primary-bg-color:        #FFFFFF;
+  --md-primary-bg-color--light: rgba(255, 255, 255, .72);
+}
+
+[data-md-color-accent="custom"] {
+  --md-accent-fg-color:             #0B7A50;
+  --md-accent-fg-color--transparent: rgba(11, 122, 80, .1);
+}
+
+/* Light: a warm-neutral ground rather than flat white, and a green link. */
+[data-md-color-scheme="default"] {
+  --md-default-bg-color:      #FCFDFC;
+  --md-typeset-a-color:       #0B7A50;
+  --md-code-bg-color:         #F1F5F2;
+  --md-code-fg-color:         #16302A;
+  --md-typeset-mark-color:    #D8F0E3;
+  --md-footer-bg-color:       #103126;
+  --md-footer-bg-color--dark: #09201A;
+}
+
+/* Dark: a green-biased ink, not the theme's default blue-grey. */
+[data-md-color-scheme="slate"] {
+  --md-hue: 160;
+  --md-default-bg-color:        #0C1512;
+  --md-default-fg-color:        #E4EDE8;
+  --md-default-fg-color--light: #B3C4BB;
+  --md-typeset-a-color:         #45D693;
+  --md-code-bg-color:           #121D18;
+  --md-code-fg-color:           #DDE8E2;
+  --md-footer-bg-color:         #09100D;
+  --md-footer-bg-color--dark:   #060A08;
+}
+[data-md-color-scheme="slate"][data-md-color-primary="custom"] {
+  --md-primary-fg-color: #0E2A21;
+}
+[data-md-color-scheme="slate"][data-md-color-accent="custom"] {
+  --md-accent-fg-color: #45D693;
+}
+
+/* ---------- typography ---------- */
+
+.md-typeset {
+  font-size: .78rem;
+  line-height: 1.68;
+}
+.md-typeset h1 {
+  font-weight: 640;
+  letter-spacing: -.02em;
+  color: var(--md-default-fg-color);
+}
+.md-typeset h2 {
+  font-weight: 620;
+  letter-spacing: -.012em;
+  margin-top: 2.2em;
+  padding-top: .5em;
+  border-top: 1px solid var(--md-default-fg-color--lightest);
+}
+.md-typeset h3 { font-weight: 600; letter-spacing: -.008em; }
+.md-typeset code { font-size: .86em; border-radius: 3px; }
+.md-typeset table:not([class]) th { font-weight: 600; }
+.md-typeset table:not([class]) { font-size: .72rem; }
+
+/* The endpoint under a page title, written as `GET /agent/v1/updates`. */
+.md-typeset h1 + p > code:only-child {
+  display: inline-block;
+  margin-bottom: .4em;
+  padding: .24em .6em;
+  font-size: .76em;
+  letter-spacing: .02em;
+  color: var(--md-accent-fg-color);
+  background: var(--md-accent-fg-color--transparent);
+  border-radius: 4px;
+}
+
+/* ---------- landing page ---------- */
+
+.hero {
+  margin: 0 0 2.4rem;
+}
+.hero h1 {
+  font-size: 2.1rem;
+  line-height: 1.12;
+  font-weight: 680;
+  letter-spacing: -.028em;
+  margin: 0 0 .5rem;
+  max-width: 18ch;
+}
+.hero > p:first-of-type {
+  font-size: .94rem;
+  line-height: 1.55;
+  color: var(--md-default-fg-color--light);
+  max-width: 54ch;
+  margin: 0 0 1.2rem;
+}
+.hero .actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .6rem;
+  margin-bottom: 1.6rem;
+}
+.md-typeset .hero .actions .md-button {
+  margin: 0;
+}
+
+/* Material's grid cards, tightened up. */
+.md-typeset .grid.cards > ul > li {
+  border-radius: .5rem;
+  border-color: var(--md-default-fg-color--lightest);
+  transition: border-color .2s, box-shadow .2s;
+}
+.md-typeset .grid.cards > ul > li:hover {
+  border-color: var(--md-accent-fg-color);
+  box-shadow: none;
+}
+.md-typeset .grid.cards > ul > li > hr {
+  margin: .6em 0;
+}
+.md-typeset .grid.cards > ul > li p:last-child {
+  margin-bottom: 0;
+}
+
+/* A quiet label above a section, e.g. "Ask a question". */
+.md-typeset .eyebrow {
+  font-size: .68rem;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--md-accent-fg-color);
+  margin-bottom: .3em;
+}
+
+/* ---------- misc ---------- */
+
+.md-header__title { font-weight: 600; }
+.md-nav__title { font-weight: 600; }
+.md-typeset .admonition, .md-typeset details { border-radius: .4rem; font-size: .74rem; }
+.md-footer-meta { font-size: .7rem; }
+
+/* ---------- landing width ---------- */
+
+/* The home page hides both sidebars, so a column left to itself would run the
+   full width of a desktop screen. Prose is capped at a readable measure while
+   the card grids below it stay full width. */
+.md-typeset .hero,
+.md-typeset .prose {
+  max-width: 47rem;
+}
+
+/* Cards that are a plain link list ("Look something up") sit tighter. */
+.md-typeset .grid.cards > ul > li > p:only-child {
+  margin: 0;
+}
+
+/* Mermaid diagrams: give them room and centre them. */
+.md-typeset .mermaid {
+  margin: 1.2em 0;
+}

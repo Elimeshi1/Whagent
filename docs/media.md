@@ -1,4 +1,4 @@
-# Media
+# Files and media
 
 `POST` / `GET` / `DELETE /agent/v1/media`
 

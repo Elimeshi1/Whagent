@@ -64,7 +64,7 @@ client.send_document(to, file="invoice.pdf")                      # filename: in
 client.send_document(to, media_id=mid, filename="invoice.pdf")    # set it yourself
 ```
 
-Formats, size caps and codec constraints are in [Limits and formats](limits.md). Uploading is covered in [Media](media.md).
+Formats, size caps and codec constraints are in [Limits and formats](limits.md). Uploading is covered in [Files and media](media.md).
 
 ## Quoting a message
 

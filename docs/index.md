@@ -1,8 +1,22 @@
-# whagent
+---
+hide:
+  - navigation
+  - toc
+---
 
-A Python library for the [WhatsApp Agent Platform](https://www.whatsapp.com/developer/WhatsApp-Agent-Platform-Developer-Manual.pdf) API (`https://api.whatsapp.com/agent/v1`).
+<div class="hero" markdown>
 
-It covers every endpoint in version 1 of the developer manual — sending, long-poll receiving, read receipts, the typing indicator and media — and adds what you would otherwise write yourself: typed responses, offset tracking, retries with backoff, client-side rate limiting and local validation against the documented caps.
+# WhatsApp agents, in Python
+
+whagent is a small library for the [WhatsApp Agent Platform](https://www.whatsapp.com/developer/WhatsApp-Agent-Platform-Developer-Manual.pdf). You write a function that answers a message; it handles the API — polling, receipts, media, retries and rate limits.
+
+[Get started](getting-started.md){ .md-button .md-button--primary }
+[How it works](concepts.md){ .md-button }
+[Questions](faq.md){ .md-button }
+
+</div>
+
+<div class="prose" markdown>
 
 ```python
 from whagent import Agent
@@ -16,48 +30,103 @@ def echo(ctx):
 agent.run()
 ```
 
+That is a complete, running agent. It polls for your messages, marks them read, shows a typing indicator while your function runs, and sends the reply.
+
 ```bash
 pip install -e .
 ```
 
-Python 3.9+. The only runtime dependency is `requests`.
+Python 3.9+, one dependency (`requests`).
 
-## Two layers
+## The one thing to know first
 
-Use whichever fits.
+**An agent talks to exactly one person: the WhatsApp account that created it — you.**
 
-**[Agent](agent.md)** registers handlers and runs the poll loop for you — it polls, marks messages read, shows a typing indicator and dispatches each message to the handlers that match.
+It cannot message anyone else, cannot message your other agents, and cannot post in groups. Think of it as a private assistant in your own chat list, not a bot with an audience. [Why, and what that means →](faq.md)
 
-**[Client](client.md)** is one method per endpoint, with nothing hidden:
+</div>
 
-```python
-from whagent import Client
+## Start here
 
-with Client(token) as client:
-    client.send_text("user:50972923564215", "Hello!")
-    client.send_image("user:50972923564215", file="cat.jpg", caption="look at this")
-    update = client.get_updates(offset=1287, timeout=25)
-```
+<div class="grid cards" markdown>
 
-## Documentation
+-   :material-rocket-launch:{ .lg .middle } **Getting started**
 
-| Page | What it covers |
-|---|---|
-| [Getting started](getting-started.md) | Install, get an API token, run your first agent |
-| [Concepts](concepts.md) | Polling, identifiers, what an agent may do |
-| [Agent](agent.md) | Handlers, `Context`, the poll loop, offset persistence |
-| [Client](client.md) | Construction, configuration, session and lifecycle |
-| [Sending messages](sending.md) | `POST /messages` |
-| [Receiving updates](receiving.md) | `GET /updates` and offsets |
-| [Receipts and typing](receipts.md) | `POST /statuses` |
-| [Media](media.md) | Upload, download, delete |
-| [Models](models.md) | `Update`, `Message`, `Status`, `Media`, identifiers |
-| [Errors](errors.md) | Exception hierarchy, error codes, retry policy |
-| [Rate limits](rate-limits.md) | Per-method caps and the built-in limiter |
-| [Limits and formats](limits.md) | Length caps, media sizes, accepted MIME types |
-| [Recipes](recipes.md) | Persistence, slow work, shutdown, deployment |
-| [Testing](testing.md) | Testing an agent without touching the network |
+    ---
 
-## Scope
+    Create an agent in WhatsApp, get a token, run your first reply.
 
-whagent is an independent library built against version 1 of the WhatsApp Agent Platform developer manual (August 25, 2026). It is not affiliated with or endorsed by WhatsApp.
+    [:octicons-arrow-right-24: Five minutes](getting-started.md)
+
+-   :material-lightbulb-on:{ .lg .middle } **How it works**
+
+    ---
+
+    Polling instead of webhooks, why messages have ids, and what stays yours to track.
+
+    [:octicons-arrow-right-24: The model](concepts.md)
+
+-   :material-comment-question:{ .lg .middle } **Questions and answers**
+
+    ---
+
+    Who can it message? What if it is offline? Can I run two? Straight answers.
+
+    [:octicons-arrow-right-24: Q&A](faq.md)
+
+</div>
+
+## Do something
+
+<div class="grid cards" markdown>
+
+-   :material-send:{ .lg .middle } **Send a message**
+
+    ---
+
+    Text, photos, documents, stickers — with captions, quotes and link previews.
+
+    [:octicons-arrow-right-24: Sending messages](sending.md)
+
+-   :material-inbox-arrow-down:{ .lg .middle } **Receive messages**
+
+    ---
+
+    The poll loop, and how to never miss or double-answer a message.
+
+    [:octicons-arrow-right-24: Receiving messages](receiving.md)
+
+-   :material-file-download:{ .lg .middle } **Handle files**
+
+    ---
+
+    Download what you are sent, upload what you send back.
+
+    [:octicons-arrow-right-24: Files and media](media.md)
+
+-   :material-server:{ .lg .middle } **Run it for real**
+
+    ---
+
+    Surviving restarts, slow work, worker threads, systemd.
+
+    [:octicons-arrow-right-24: Recipes](recipes.md)
+
+</div>
+
+## Look something up
+
+<div class="grid cards" markdown>
+
+-   **[`Agent`](agent.md)** — handlers, `Context`, the run loop
+-   **[`Client`](client.md)** — one method per endpoint
+-   **[Models](models.md)** — what `Message`, `Status` and `Update` carry
+-   **[Errors](errors.md)** — every code, and what to do about it
+-   **[Rate limits](rate-limits.md)** — 12 sends a minute, and how to live in it
+-   **[Limits and formats](limits.md)** — sizes, MIME types, codecs
+
+</div>
+
+---
+
+whagent is an independent library built against version 1 of the developer manual (August 25, 2026). It is not affiliated with or endorsed by WhatsApp.

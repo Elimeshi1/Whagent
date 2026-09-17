@@ -1,4 +1,4 @@
-# Receiving updates
+# Receiving messages
 
 `GET /agent/v1/updates`
 

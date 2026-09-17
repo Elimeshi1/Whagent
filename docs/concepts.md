@@ -1,66 +1,108 @@
-# Concepts
+# How it works
 
-What the platform is, in the six facts that shape how you write against it.
+Six things about the platform that shape every agent you will write. None of them are hard; all of them will bite you if you assume otherwise.
 
-## 1. You poll; there is no webhook
+## Your agent has one conversation
 
-Inbound messages arrive through a **long poll** of `GET /agent/v1/updates`, not a callback to a server of yours. The connection stays open until something arrives or the timeout elapses (up to 25 seconds). This means an agent can run from a laptop or a container with no inbound networking at all.
+An agent lives in your WhatsApp chat list as a contact, and it can only exchange messages with **the account that created it**. Not other people, not your other agents, not groups.
 
-Run **one poll at a time per agent**. A second concurrent poll replaces the first, and the first fails with [`PollReplacedError`](errors.md) (HTTP 409).
+That makes the mental model small: there is no routing, no session per user, no address book. There is one thread, and your code decides what to say in it. If you try to send anywhere else you get a 403 (code `131005`), or a 400 (code `131009`) if the recipient is not a WhatsApp user at all.
 
-See [Receiving updates](receiving.md).
+## It polls; nothing calls you
 
-## 2. Updates are a sequence you read with an offset
+There is no webhook. Your agent opens a request and **holds it open** until a message arrives or the timeout runs out — up to 25 seconds — then opens another.
 
-Messages and delivery receipts share a single per-agent sequence. Each response carries a `next_offset` to pass to the next poll. Entries are retained for **30 days** and polling does not consume them, so the same offset can be re-read.
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Your agent
+    participant W as WhatsApp
+    A->>W: GET /updates?offset=7&timeout=25
+    Note over A,W: connection stays open, waiting
+    W-->>A: 200 — 1 message, next_offset 8
+    A->>W: POST /statuses (read + typing)
+    A->>W: POST /messages (the reply)
+    A->>W: GET /updates?offset=8&timeout=25
+    W-->>A: 204 — nothing arrived
+    A->>W: GET /updates?offset=8&timeout=25
+```
 
-The consequence: what your agent has already handled is *your* bookkeeping, not the platform's. See [offsets](receiving.md#offsets).
+Two consequences worth having in mind:
 
-## 3. Participant identifiers
+* **You need no server, domain or public address.** Only outbound HTTPS. A laptop or a small container is enough.
+* **One poller per agent.** Start a second and the first dies with `PollReplacedError` (409). This is the single most common way to break a working agent.
 
-A participant identifier is written as `<type>:<id>`:
+## Updates are a numbered list you read with a pointer
 
-| Form | Meaning |
+Messages and delivery receipts go into one numbered sequence per agent. Each response tells you the number to ask for next:
+
+```python
+update = client.get_updates(offset=7)
+update.next_offset          # 8 — pass this to the next call
+```
+
+Three properties follow, and together they are the whole subtlety of receiving:
+
+**Reading does not consume.** Entries stay for 30 days; the same offset can be read again. Good for crash recovery, dangerous if you replay a backlog and answer everything in it.
+
+**An empty poll gives you nothing to advance with.** When the timeout passes with no traffic you get a 204 and *no* `next_offset` — so you re-poll with the same number. `get_updates()` returns `None` there, and `poll_updates()` just keeps going.
+
+**Where you are is your business.** The platform does not track what you have handled; your stored offset does. Persist it and a restart resumes cleanly:
+
+```python
+from whagent import Agent, FileOffsetStore
+
+agent = Agent(token, offset_store=FileOffsetStore(".whagent-offset"))
+```
+
+[The full picture →](receiving.md)
+
+## Identifiers name accounts, and accounts change
+
+Every participant is written as `user:<id>` or `agent:<id>`. Treat the whole string as opaque: never parse it, never show it to a person, and never store it as a permanent key.
+
+It can change — a new phone number, or an account deleted and registered again. So the safe habit is always the same: **take the identifier off an inbound message and send it straight back.**
+
+```python
+@agent.on_text
+def handle(ctx):
+    ctx.reply("on it")           # goes back to ctx.sender, always current
+```
+
+The prefix earns its keep in one place: `context.from`, which tells you whether a quoted message was written by you (`user:`) or by your agent (`agent:`).
+
+## Every message has an id
+
+Inbound or outbound, each message carries a **wamid**. You will use it for four things:
+
+| To do this | Use |
 |---|---|
-| `user:50972923564215` | a WhatsApp user |
-| `agent:123456789` | an agent |
+| Quote a message in your reply | `reply_to=message.id` |
+| Mark a message as read | `client.mark_read(message.id)` |
+| Match a delivery receipt to what you sent | `status.id` |
+| Avoid answering the same message twice | `message.id` as a key |
 
-Treat the whole string as **opaque**: compare it in full, never parse it, and never show it to a WhatsApp user.
+## Media travels separately
 
-Where it appears:
+You never attach bytes to a message. Sending is upload → get an id → send a message referencing it; receiving is the reverse. Everything expires after 30 days.
 
-| Field | Endpoint |
+```python
+media_id = client.upload_media("invoice.pdf")     # step 1
+client.send_document(to, media_id=media_id)       # step 2
+
+# one call that does both
+client.send_document(to, file="invoice.pdf")
+```
+
+[Files and media →](media.md)
+
+## What the platform does, and what you do
+
+| The platform | You |
 |---|---|
-| `messages[].from`, `contacts[].wa_id`, `statuses[].recipient_id` | `GET /updates` |
-| `to` | `POST /messages` — `user:<id>` only |
-| `contacts[].wa_id`, `contacts[].input` | `POST /messages` response |
-| `messages[].context.from` | either form — read the prefix to tell them apart |
+| Buffers updates for 30 days | Remember which offset you reached |
+| Assigns every message an id | Remember which ids you answered |
+| Enforces rate limits and size caps | Stay inside them, or let the library pace you |
+| Tells you a message was read | Decide what "handled" means |
 
-In this library: `message.sender`, `status.recipient_id`, `contact.wa_id`, and `message.context.sender` (with `.from_agent` to tell which kind it is). Helpers: `whagent.participant_type(s)` and `whagent.is_user(s)`.
-
-### Identifiers are not stable
-
-An identifier refers to an **account**, not a person, and it can change — a new phone number, or an account deleted and re-registered, may produce a new one.
-
-* Treat an identifier as a **conversation key**, not as a primary key for a user record.
-* An unrecognized identifier is a new conversation. A returning user whose identifier changed cannot be matched to their earlier one.
-* Prefer the `sender` of a **recent** inbound message over one you stored long ago; a user may no longer be reachable at the old one.
-
-## 4. An agent talks to its creator only
-
-The recipient of every outbound message must be the agent's creator, and that account must have the agent API enabled. Anything else is HTTP 403 / code `131005`. The same applies to read receipts: you may only mark messages that the creator sent.
-
-## 5. Message ids
-
-Every message — inbound or outbound — has a **wamid**, an opaque id like `wamid.HBgONTA5...`. You use it to:
-
-* quote a message (`reply_to=` on a send),
-* mark a message as read,
-* match a delivery receipt to what you sent (`status.id`),
-* deduplicate, when an offset replays.
-
-## 6. Media is a two-step affair
-
-You never attach bytes to a message. You upload the file, get a media id, and send a message that references it. Inbound media works the same way in reverse: the message carries a media id, and you fetch the bytes separately. Media expires after **30 days**.
-
-See [Media](media.md). The library's `send_image(..., file=...)` does both steps for you.
+The library covers the right-hand column for the common cases — offset tracking, deduplication within a process, pacing, retries — and gets out of the way for the rest.
