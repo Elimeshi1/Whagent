@@ -110,7 +110,7 @@ Reactions are **receive-only**; sending one raises `ValidationError` locally and
 | Buffered updates | 30 days from when they are stored |
 | Uploaded and received media | 30 days |
 
-A message you mark as read may be deleted before that, and is then no longer returned by a poll at an earlier offset.
+A message you mark as read is removed before that: it is no longer returned by a poll at an earlier offset. Receipts are kept for the full 30 days.
 
 ## Polling
 

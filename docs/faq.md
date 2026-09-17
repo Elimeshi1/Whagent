@@ -9,13 +9,25 @@ The questions that come up first, answered directly.
 The platform enforces it twice over:
 
 * `to` accepts a WhatsApp user identifier and nothing else. An agent identifier, a bare phone number, or any other shape comes back as **400**, code `131009`.
-* Even a well-formed user identifier that is not the creator comes back as **403**, code `131005`: *"An agent may only message its creator."*
+* Even a well-formed user identifier that is not the creator comes back as **403**, code `131005`: *"The bot may only message its own API-enabled owner"*.
+* An agent's numeric id dressed up as a user (`user:<agent id>`) currently comes back as **500**, code `2` — not delivered, but the platform reports it as an internal error rather than a 403.
 
 So: no other people, no customers, no broadcast lists.
 
 ## Can my agents talk to each other?
 
-**No.** `to` rejects an `agent:<id>` outright — 400, code `131009`.
+**No.** Tested against the live API with two agents belonging to the same account, in both directions:
+
+| Attempt | Result |
+|---|---|
+| `to="agent:<id>"` | 400, code `131009` — *Invalid participant type; expected: user, got: agent* |
+| the bare numeric id | 400, code `131009` — *Invalid participant format* |
+| `to="user:<agent id>"` | 500, code `2` |
+| `get_media` / `delete_media` / sending the other agent's media id | 400 — *No media found* |
+| fetching the other agent's media URL with your token | 404, code `100` |
+| `mark_read` on the other agent's message | 400, code `131009` |
+
+Media and receipts are fully isolated per agent. One quirk: `reply_to` with a wamid from the other agent's chat is **accepted** — the send succeeds — so do not rely on the API to reject a foreign wamid there.
 
 If you want two of your agents to cooperate, wire that up on your side: run both in one process and call a function, or put a queue between them. From WhatsApp's point of view each agent has exactly one conversation, with you.
 
@@ -75,7 +87,7 @@ No. The agent **polls** — it opens a request to WhatsApp and waits up to 25 se
 
 ## What happens to messages sent while my agent is off?
 
-They wait. Updates are buffered for **30 days**, and reading them does not consume them. When your agent starts again it continues from the offset it stored:
+They wait. Updates are buffered for **30 days**, and polling does not consume them — only marking a message read does. When your agent starts again it continues from the offset it stored:
 
 ```python
 from whagent import Agent, FileOffsetStore
@@ -97,7 +109,7 @@ What you must not do is run **two pollers on one token**. The second poll replac
 
 ## Can my agent message me first?
 
-Yes. Nothing requires an inbound message before you send — a scheduled job that calls `send_text` works, as long as you have a current identifier for yourself and stay inside the rate limit. Get that identifier from a recent message rather than from a constant.
+Yes. Nothing requires an inbound message before you send — a scheduled job that calls `client.send_text("...")` works, and stays inside the rate limit. You don't need an identifier: a client that has never polled looks it up by itself before its first send. See [the recipient](sending.md#the-recipient).
 
 ## Can it read my other WhatsApp chats?
 
@@ -113,7 +125,7 @@ The id of a single message, returned when you send one and present on everything
 
 ## My agent answered a month of old messages. Why?
 
-It started from `offset=0`, which replays the whole 30-day buffer. Use `start="new"` (the default) for traffic from now on, or keep a record of the message ids you have already handled. [Replaying a backlog safely](recipes.md)
+It started from `offset=0`, which replays the 30-day buffer — every message in it that was never marked read. (Messages that were marked read are gone from the buffer, so they are not replayed.) Use `start="new"` (the default) for traffic from now on, or keep a record of the message ids you have already handled. [Replaying a backlog safely](recipes.md)
 
 ## I get a 400 with code 100 and everything looks fine
 

@@ -48,14 +48,14 @@ Three things follow, and they are the whole subtlety of this endpoint:
 
 1. **A 204 carries no `next_offset`.** Re-poll with the same offset. `get_updates()` returns `None`; `poll_updates()` does this for you.
 2. **Polling does not consume entries.** They are retained for 30 days, so the same offset can be re-read — which also means *you* decide what counts as already handled.
-3. **A message you mark as read may be deleted**, and is then no longer returned by a poll at an earlier offset.
+3. **Marking a message read removes it.** In practice a message drops out of the buffer as soon as it is marked read, and a poll at an earlier offset no longer returns it. Receipts (`statuses`) are unaffected. So a message is replayable only until you mark it — mark it once you have handled it, not before.
 
 ### Where to start
 
 | Start | How | Effect |
 |---|---|---|
 | New traffic only | omit `offset` | Resolves to the head at the moment the request arrives. **Do this once** — an offset-less poll re-resolves the head, so a loop built on them can miss whatever arrived between one response and the next request. |
-| Everything retained | `offset=0` | Replays up to 30 days of backlog. An agent that answers automatically will answer all of it. |
+| Everything retained | `offset=0` | Replays up to 30 days of backlog — every receipt, and every message not yet marked read. An agent that answers automatically will answer all of those. |
 | Where you left off | `offset=<stored next_offset>` | The normal case once you persist it. |
 
 With `Agent`, that is `start="new"`, `start="beginning"` or an `offset_store` — see [Agent → offset persistence](agent.md#offset-persistence).
@@ -76,7 +76,7 @@ for update in client.poll_updates(
     ...
 ```
 
-It yields only **non-empty** updates, skips 204s without moving the offset, and backs off on `RateLimitError` and `ServerError` while reusing the prior offset — nothing was consumed, so nothing is lost.
+It yields only **non-empty** updates, calls `on_offset` only after your loop body has finished with an update (so a crash mid-update re-reads it), skips 204s without moving the offset, and backs off on `RateLimitError` and `ServerError` while reusing the prior offset — nothing was consumed, so nothing is lost.
 
 `PollReplacedError` is raised, not retried: it means a second poll for the same agent replaced this one. Run one poll loop per token.
 

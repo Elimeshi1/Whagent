@@ -19,6 +19,7 @@ agent.run()
 ## Install
 
 ```bash
+pip install -U pip   # editable installs need pip 21.3 or newer
 pip install -e .
 ```
 
@@ -95,7 +96,7 @@ pip install -e ".[dev]"
 pytest
 ```
 
-120 tests, no network: the HTTP session is faked, so they assert the exact requests the library builds against the payloads in the manual.
+143 tests, no network: the HTTP session is faked, so they assert the exact requests the library builds against the payloads in the manual.
 
 ## License
 

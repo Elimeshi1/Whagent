@@ -22,6 +22,7 @@ That is a complete agent. It polls for your messages, marks them read, shows a t
 ```bash
 git clone https://github.com/Elimeshi1/Whagent.git
 cd Whagent
+pip install -U pip        # editable installs need pip 21.3 or newer
 pip install -e .
 ```
 

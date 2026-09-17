@@ -55,13 +55,13 @@ except APIError as exc:
 
 | `error.code` | HTTP | Meaning | Exception |
 |---|---|---|---|
-| `2` | 500 | Internal server error | `ServerError` |
+| `2` | 500 | Internal server error — also returned for `to="user:<id>"` where the id is not a WhatsApp user | `ServerError` |
 | `100` | 400 | Token present but not valid; unknown media id; a length cap exceeded (then `message` is just the field name) | `InvalidRequestError` |
 | `100` | 404 | Media id unknown or expired when fetching its URL | `MediaNotFoundError` |
 | `190` | 401 | `Authorization` header absent or malformed | `AuthenticationError` |
 | `130429` | 429 | Too many requests | `RateLimitError` |
-| `131005` | 403 | Recipient is not the agent's creator, or the message being marked read was not sent by them | `ForbiddenError` |
-| `131009` | 400 | Required field missing or malformed; recipient not a WhatsApp user; media type cannot be sent; media id unknown or expired | `InvalidRequestError` |
+| `131005` | 403 | Recipient is not the agent's creator | `ForbiddenError` |
+| `131009` | 400 | Required field missing or malformed; recipient not a WhatsApp user (including an `agent:` id); a reaction send; media id unknown or expired; marking read a message this agent did not receive; a non-integer poll parameter | `InvalidRequestError` |
 | `131016` | 503 | Not accepted for delivery | `NotDeliveredError` |
 | `131053` | 400 | Media rejected at upload — over the size limit, or an unaccepted MIME type | `MediaUploadError` |
 | `1752041` | 409 | A newer poll replaced this one | `PollReplacedError` |
@@ -93,7 +93,7 @@ client = Client(token, retry_send_on_server_error=True)   # when a duplicate bea
 client = Client(token, max_retries=0)                     # do it all yourself
 ```
 
-`RateLimitError.retry_after` carries the `Retry-After` header when the API sends one; the library honours it.
+`RateLimitError.retry_after` carries the `Retry-After` header when the API sends one; the library honours it. In practice the API sends none, so after a 429 the library backs off from **5 seconds** (5, 10, 20, capped by `backoff_max`) rather than from `backoff_base` — the counters span 60 seconds, and a sub-second retry would only collect another 429.
 
 See [Sending messages → retrying a send](sending.md#retrying-a-send) for the full decision table.
 

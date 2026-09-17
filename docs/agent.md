@@ -31,8 +31,8 @@ Agent(
 
 | Argument | Notes |
 |---|---|
-| `mark_read` | A read receipt is sent only for messages that at least one handler matches. |
-| `typing` | Implies `mark_read` — both travel in the same `POST /statuses` call. |
+| `mark_read` | A read receipt is sent only for messages that at least one handler matches, **after** the handlers run — marking read removes a message from the buffer, so a crash mid-handler leaves it replayable. |
+| `typing` | Implies `mark_read` — both travel in the same `POST /statuses` call, so with `typing=True` the receipt goes out **before** the handler. Use `typing=False` when surviving a crash mid-handler matters more than the indicator. |
 | `start` | Where the first poll begins when nothing is stored. See [starting points](receiving.md#where-to-start). |
 | `offset_store` | Any object with `load()` and `save(offset)`. |
 | `skip_own_replays` | Guards against answering the same message twice when an offset replays. |
@@ -149,7 +149,7 @@ if update:
 
 ## Offset persistence
 
-Without a store, a restart uses `start=` again: with `"new"` you lose whatever arrived while the process was down. `FileOffsetStore` fixes that:
+Without a store, a restart uses `start=` again: with `"new"` you lose whatever arrived while the process was down. `FileOffsetStore` fixes that. The offset is saved once an update has been dispatched, not when it arrives:
 
 ```python
 from whagent import Agent, FileOffsetStore

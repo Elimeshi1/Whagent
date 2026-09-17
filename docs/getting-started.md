@@ -25,10 +25,11 @@ export WHATSAPP_AGENT_TOKEN='...'
 ```bash
 git clone https://github.com/Elimeshi1/Whagent.git
 cd Whagent
+pip install -U pip        # editable installs need pip 21.3 or newer
 pip install -e .
 ```
 
-Python 3.9 or newer. The only runtime dependency is [`requests`](https://pypi.org/project/requests/).
+Python 3.9 or newer. The only runtime dependency is [`requests`](https://pypi.org/project/requests/). The pip that ships with macOS's system Python 3.9 is too old for `pip install -e .` on a `pyproject.toml` project — hence the upgrade line.
 
 ## 3. Write the agent
 

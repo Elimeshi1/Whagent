@@ -6,7 +6,7 @@ Six things about the platform that shape every agent you will write. None of the
 
 An agent lives in your WhatsApp chat list as a contact, and it can only exchange messages with **the account that created it**. Not other people, not your other agents, not groups.
 
-That makes the mental model small: there is no routing, no session per user, no address book. There is one thread, and your code decides what to say in it. If you try to send anywhere else you get a 403 (code `131005`), or a 400 (code `131009`) if the recipient is not a WhatsApp user at all.
+That makes the mental model small: there is no routing, no session per user, no address book. There is one thread, and your code decides what to say in it. If you try to send anywhere else you get a 403 (code `131005`), or a 400 (code `131009`) if the recipient is not a WhatsApp user at all — another agent included.
 
 ## It polls; nothing calls you
 
@@ -43,7 +43,7 @@ update.next_offset          # 8 — pass this to the next call
 
 Three properties follow, and together they are the whole subtlety of receiving:
 
-**Reading does not consume.** Entries stay for 30 days; the same offset can be read again. Good for crash recovery, dangerous if you replay a backlog and answer everything in it.
+**Reading does not consume — marking read does.** Polling leaves entries in place for 30 days, so the same offset can be read again. But once a message is marked read it drops out of the buffer, and a replay no longer returns it; receipts for your own messages stay. So a replay brings back only what was never marked read.
 
 **An empty poll gives you nothing to advance with.** When the timeout passes with no traffic you get a 204 and *no* `next_offset` — so you re-poll with the same number. `get_updates()` returns `None` there, and `poll_updates()` just keeps going.
 

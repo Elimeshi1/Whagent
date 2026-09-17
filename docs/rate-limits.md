@@ -43,6 +43,6 @@ A send every five seconds is the real constraint on a chatty agent. What helps:
 
 ## When you do hit 429
 
-`RateLimitError` is retried automatically with exponential backoff and jitter, honouring `Retry-After` when the API sends one. Inside the poll loop the prior offset is reused, so nothing is lost.
+`RateLimitError` is retried automatically with exponential backoff and jitter, honouring `Retry-After` when the API sends one. The API does not currently send it, so the backoff after a 429 starts at 5 seconds (5, 10, 20). Inside the poll loop the prior offset is reused, so nothing is lost.
 
 If you catch it yourself, back off exponentially — do not retry immediately in a tight loop.

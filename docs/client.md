@@ -48,13 +48,17 @@ Client(
 
 | | |
 |---|---|
-| `send_text(to, body, preview_url=False, reply_to=None)` | → [`SendResult`](models.md#sendresult) |
-| `send_image(to, media_id=\| file=, mime_type=None, caption=None, reply_to=None)` | |
+| `send_text([to,] body, preview_url=False, reply_to=None)` | → [`SendResult`](models.md#sendresult) |
+| `send_image(to=None, media_id=\| file=, mime_type=None, caption=None, reply_to=None)` | |
 | `send_video(...)`, `send_audio(...)`, `send_sticker(...)` | |
 | `send_document(..., filename=None)` | |
 | `send_message(to, type, payload, reply_to=None)` | any payload shape; `to=None` uses the known recipient |
 | `reply(message, body, **kwargs)` | text back to a `Message`'s sender, quoting it |
 
+### The recipient
+
+| | |
+|---|---|
 | `recipient` | the creator's identifier, as last seen |
 | `discover_recipient(refresh=False)` | look it up explicitly, with one poll |
 

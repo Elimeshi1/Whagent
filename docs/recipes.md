@@ -29,7 +29,7 @@ Any object with `load()` and `save(offset)` works — see [Agent → offset pers
 
 ## Replaying a backlog safely
 
-`start="beginning"` replays up to 30 days. An agent that answers automatically will answer *all* of it. Keep a record of what you have already handled — across restarts, not just in memory:
+`start="beginning"` replays up to 30 days — every message not yet marked read (a marked message drops out of the buffer). An agent that answers automatically will answer *all* of it. Keep a record of what you have already handled — across restarts, not just in memory:
 
 ```python
 import sqlite3

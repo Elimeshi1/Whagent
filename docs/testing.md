@@ -116,4 +116,4 @@ pip install -e ".[dev]"
 pytest
 ```
 
-120 tests, no network. They assert the exact requests the library builds against the payloads in the developer manual — [`tests/conftest.py`](https://github.com/Elimeshi1/Whagent/blob/main/tests/conftest.py) has a fuller version of the fake session above, and is a reasonable thing to copy.
+143 tests, no network. They assert the exact requests the library builds against the payloads in the developer manual — [`tests/conftest.py`](https://github.com/Elimeshi1/Whagent/blob/main/tests/conftest.py) has a fuller version of the fake session above, and is a reasonable thing to copy.
