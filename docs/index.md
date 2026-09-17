@@ -20,10 +20,7 @@ That is a complete agent. It polls for your messages, marks them read, shows a t
 ## Installation
 
 ```bash
-git clone https://github.com/Elimeshi1/Whagent.git
-cd Whagent
-pip install -U pip        # editable installs need pip 21.3 or newer
-pip install -e .
+pip install whagent
 ```
 
 Python 3.9 or newer. The only runtime dependency is `requests`.

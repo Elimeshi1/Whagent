@@ -19,33 +19,32 @@ agent.run()
 ## Install
 
 ```bash
-pip install -U pip   # editable installs need pip 21.3 or newer
-pip install -e .
+pip install whagent
 ```
 
 Python 3.9+. The only runtime dependency is `requests`.
 
 ## Documentation
 
-**https://elimeshi1.github.io/Whagent/** — built from [`docs/`](docs/index.md) with MkDocs Material.
+**https://elimeshi1.github.io/Whagent/** — built from [`docs/`](https://github.com/Elimeshi1/Whagent/tree/main/docs) with MkDocs Material.
 
 | | |
 |---|---|
-| [Getting started](docs/getting-started.md) | Create an agent, get a token, run your first reply |
-| [How it works](docs/concepts.md) | Polling, offsets, identifiers — the model in six pieces |
-| [Questions and answers](docs/faq.md) | Who it can message, what happens offline, running two agents |
-| [Sending messages](docs/sending.md) | `POST /messages` — every type, captions, quotes |
-| [Receiving messages](docs/receiving.md) | `GET /updates` and offsets |
-| [Files and media](docs/media.md) | Upload, download, delete |
-| [Receipts and typing](docs/receipts.md) | `POST /statuses` |
-| [Agent](docs/agent.md) | Handlers, `Context`, the run loop |
-| [Client](docs/client.md) | One method per endpoint |
-| [Models](docs/models.md) | `Update`, `Message`, `Status`, `Media` |
-| [Errors](docs/errors.md) | Exception hierarchy, codes, retry policy |
-| [Rate limits](docs/rate-limits.md) | Per-method caps and the built-in limiter |
-| [Limits and formats](docs/limits.md) | Length caps, sizes, accepted MIME types |
-| [Recipes](docs/recipes.md) | Persistence, slow work, shutdown, deployment |
-| [Testing](docs/testing.md) | Testing an agent without touching the network |
+| [Getting started](https://elimeshi1.github.io/Whagent/getting-started/) | Create an agent, get a token, run your first reply |
+| [How it works](https://elimeshi1.github.io/Whagent/concepts/) | Polling, offsets, identifiers — the model in six pieces |
+| [Questions and answers](https://elimeshi1.github.io/Whagent/faq/) | Who it can message, what happens offline, running two agents |
+| [Sending messages](https://elimeshi1.github.io/Whagent/sending/) | `POST /messages` — every type, captions, quotes |
+| [Receiving messages](https://elimeshi1.github.io/Whagent/receiving/) | `GET /updates` and offsets |
+| [Files and media](https://elimeshi1.github.io/Whagent/media/) | Upload, download, delete |
+| [Receipts and typing](https://elimeshi1.github.io/Whagent/receipts/) | `POST /statuses` |
+| [Agent](https://elimeshi1.github.io/Whagent/agent/) | Handlers, `Context`, the run loop |
+| [Client](https://elimeshi1.github.io/Whagent/client/) | One method per endpoint |
+| [Models](https://elimeshi1.github.io/Whagent/models/) | `Update`, `Message`, `Status`, `Media` |
+| [Errors](https://elimeshi1.github.io/Whagent/errors/) | Exception hierarchy, codes, retry policy |
+| [Rate limits](https://elimeshi1.github.io/Whagent/rate-limits/) | Per-method caps and the built-in limiter |
+| [Limits and formats](https://elimeshi1.github.io/Whagent/limits/) | Length caps, sizes, accepted MIME types |
+| [Recipes](https://elimeshi1.github.io/Whagent/recipes/) | Persistence, slow work, shutdown, deployment |
+| [Testing](https://elimeshi1.github.io/Whagent/testing/) | Testing an agent without touching the network |
 
 Build the site locally with:
 
@@ -85,13 +84,16 @@ with Client(token) as client:
 
 ## Examples
 
-* [`examples/echo_bot.py`](examples/echo_bot.py) — text, media and reactions
-* [`examples/media_bot.py`](examples/media_bot.py) — download an attachment, send a file back
-* [`examples/raw_client.py`](examples/raw_client.py) — the loop without the `Agent` layer
+* [`examples/echo_bot.py`](https://github.com/Elimeshi1/Whagent/blob/main/examples/echo_bot.py) — text, media and reactions
+* [`examples/media_bot.py`](https://github.com/Elimeshi1/Whagent/blob/main/examples/media_bot.py) — download an attachment, send a file back
+* [`examples/raw_client.py`](https://github.com/Elimeshi1/Whagent/blob/main/examples/raw_client.py) — the loop without the `Agent` layer
 
 ## Tests
 
 ```bash
+git clone https://github.com/Elimeshi1/Whagent.git
+cd Whagent
+pip install -U pip        # editable installs need pip 21.3 or newer
 pip install -e ".[dev]"
 pytest
 ```
