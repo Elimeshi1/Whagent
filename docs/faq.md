@@ -10,13 +10,13 @@ The platform enforces it twice over:
 
 * `to` accepts a WhatsApp user identifier and nothing else. An agent identifier, a bare phone number, or any other shape comes back as **400**, code `131009`.
 * Even a well-formed user identifier that is not the creator comes back as **403**, code `131005`: *"The bot may only message its own API-enabled owner"*.
-* An agent's numeric id dressed up as a user (`user:<agent id>`) currently comes back as **500**, code `2` — not delivered, but the platform reports it as an internal error rather than a 403.
+* An agent's numeric id dressed up as a user (`user:<agent id>`) comes back as **500**, code `2` — not delivered, but the platform reports it as an internal error rather than a 403.
 
 So: no other people, no customers, no broadcast lists.
 
 ## Can my agents talk to each other?
 
-**No.** Tested against the live API with two agents belonging to the same account, in both directions:
+**No** — not even between two agents created by the same account:
 
 | Attempt | Result |
 |---|---|
@@ -27,7 +27,7 @@ So: no other people, no customers, no broadcast lists.
 | fetching the other agent's media URL with your token | 404, code `100` |
 | `mark_read` on the other agent's message | 400, code `131009` |
 
-Media and receipts are fully isolated per agent. One quirk: `reply_to` with a wamid from the other agent's chat is **accepted** — the send succeeds — so do not rely on the API to reject a foreign wamid there.
+Media and receipts are fully isolated per agent. One exception: `reply_to` accepts a wamid from the other agent's chat, so do not rely on the API to reject a foreign wamid there.
 
 If you want two of your agents to cooperate, wire that up on your side: run both in one process and call a function, or put a queue between them. From WhatsApp's point of view each agent has exactly one conversation, with you.
 

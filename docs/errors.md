@@ -93,7 +93,7 @@ client = Client(token, retry_send_on_server_error=True)   # when a duplicate bea
 client = Client(token, max_retries=0)                     # do it all yourself
 ```
 
-`RateLimitError.retry_after` carries the `Retry-After` header when the API sends one; the library honours it. In practice the API sends none, so after a 429 the library backs off from **5 seconds** (5, 10, 20, capped by `backoff_max`) rather than from `backoff_base` — the counters span 60 seconds, and a sub-second retry would only collect another 429.
+`RateLimitError.retry_after` carries the `Retry-After` header when the API sends one; the library honours it. Without one, the library backs off from **5 seconds** (5, 10, 20, capped by `backoff_max`) rather than from `backoff_base` — the counters span 60 seconds, and a sub-second retry would only collect another 429.
 
 See [Sending messages → retrying a send](sending.md#retrying-a-send) for the full decision table.
 

@@ -48,7 +48,7 @@ Three things follow, and they are the whole subtlety of this endpoint:
 
 1. **A 204 carries no `next_offset`.** Re-poll with the same offset. `get_updates()` returns `None`; `poll_updates()` does this for you.
 2. **Polling does not consume entries.** They are retained for 30 days, so the same offset can be re-read — which also means *you* decide what counts as already handled.
-3. **Marking a message read removes it.** In practice a message drops out of the buffer as soon as it is marked read, and a poll at an earlier offset no longer returns it. Receipts (`statuses`) are unaffected. So a message is replayable only until you mark it — mark it once you have handled it, not before.
+3. **Marking a message read removes it.** A message drops out of the buffer as soon as it is marked read, and a poll at an earlier offset no longer returns it. Receipts (`statuses`) are unaffected. So a message is replayable only until you mark it — mark it once you have handled it, not before.
 
 ### Where to start
 

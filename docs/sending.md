@@ -78,7 +78,7 @@ client.reply(message, "On it")          # same thing, to the message's sender
 ctx.reply("On it", quote=True)          # from an Agent handler
 ```
 
-Use a wamid from this conversation — an id from `GET /updates`, or one you got back from a send. A wamid the platform never issued is a 400 (code `131009`). Note that a wamid from **another agent's** chat is currently accepted rather than rejected, so don't count on the API to catch a mix-up.
+Use a wamid from this conversation — an id from `GET /updates`, or one you got back from a send. A wamid the platform never issued is a 400 (code `131009`). A wamid from **another agent's** chat is accepted, not rejected, so don't count on the API to catch a mix-up.
 
 ## Sending a type the library doesn't know
 
