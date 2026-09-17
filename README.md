@@ -103,8 +103,6 @@ pip install -e ".[dev]"
 pytest
 ```
 
-143 tests, no network: the HTTP session is faked, so they assert the exact requests the library builds against the payloads in the manual.
-
 ## License
 
 MIT
