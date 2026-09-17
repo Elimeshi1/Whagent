@@ -1,7 +1,5 @@
 # Errors
 
-[← Documentation index](README.md)
-
 Every failure raises a subclass of `WhagentError`.
 
 ```
@@ -108,7 +106,3 @@ Turn it off to see exactly what the API says:
 ```python
 client = Client(token, validate=False)
 ```
-
----
-
-[← Models](models.md) · [Index](README.md) · [Rate limits →](rate-limits.md)

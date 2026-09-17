@@ -1,7 +1,5 @@
 # Models
 
-[← Documentation index](README.md)
-
 Every response is parsed into a frozen dataclass. Each one keeps the JSON it came from in `.raw`, so a field the platform adds later is reachable without a library upgrade.
 
 ```python
@@ -122,7 +120,3 @@ def peek(update):
     for message in update.raw["entry"][0]["changes"][0]["value"]["messages"]:
         ...
 ```
-
----
-
-[← Media](media.md) · [Index](README.md) · [Errors →](errors.md)

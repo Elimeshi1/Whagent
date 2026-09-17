@@ -1,7 +1,5 @@
 # Client
 
-[← Documentation index](README.md)
-
 `Client` is one method per endpoint, plus the plumbing: authentication, retries, rate limiting, local validation and typed responses.
 
 ```python
@@ -106,7 +104,3 @@ The library validates before sending because a round trip to learn that a captio
 ```python
 client = Client(token, validate=False, rate_limit=False, max_retries=0)
 ```
-
----
-
-[← Agent](agent.md) · [Index](README.md) · [Sending messages →](sending.md)

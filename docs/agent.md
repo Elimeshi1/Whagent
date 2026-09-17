@@ -1,7 +1,5 @@
 # Agent
 
-[← Documentation index](README.md)
-
 `Agent` is the high-level layer: you register handlers, call `run()`, and it polls, acknowledges and dispatches.
 
 ```python
@@ -175,7 +173,3 @@ class RedisOffsetStore:
 ```
 
 Store the offset as a **64-bit signed integer** and pass it back unchanged — never compute one of your own.
-
----
-
-[← Concepts](concepts.md) · [Index](README.md) · [Client →](client.md)

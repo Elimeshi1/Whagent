@@ -1,7 +1,5 @@
 # Concepts
 
-[← Documentation index](README.md)
-
 What the platform is, in the six facts that shape how you write against it.
 
 ## 1. You poll; there is no webhook
@@ -66,7 +64,3 @@ Every message — inbound or outbound — has a **wamid**, an opaque id like `wa
 You never attach bytes to a message. You upload the file, get a media id, and send a message that references it. Inbound media works the same way in reverse: the message carries a media id, and you fetch the bytes separately. Media expires after **30 days**.
 
 See [Media](media.md). The library's `send_image(..., file=...)` does both steps for you.
-
----
-
-[← Getting started](getting-started.md) · [Index](README.md) · [Agent →](agent.md)

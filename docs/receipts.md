@@ -1,6 +1,6 @@
 # Receipts and typing
 
-[← Documentation index](README.md) — `POST /agent/v1/statuses`
+`POST /agent/v1/statuses`
 
 One endpoint does both: it marks a message the user sent you as **read**, and optionally shows a **typing indicator** in the same call.
 
@@ -66,7 +66,3 @@ With both off, nothing is sent for a message until you call `ctx.mark_read()` yo
 | 503 | The receipt or the indicator was not accepted | Retry; the two cases are indistinguishable, so it may already be read |
 
 A failed receipt is not worth crashing over: `Agent` logs it as a warning and runs the handler anyway.
-
----
-
-[← Receiving updates](receiving.md) · [Index](README.md) · [Media →](media.md)

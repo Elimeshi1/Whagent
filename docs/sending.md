@@ -1,6 +1,6 @@
 # Sending messages
 
-[← Documentation index](README.md) — `POST /agent/v1/messages`
+`POST /agent/v1/messages`
 
 An agent can send `text`, `image`, `audio`, `video`, `document` and `sticker`. Reactions are **receive-only**.
 
@@ -122,7 +122,3 @@ client = Client(token, retry_send_on_server_error=True)
 ```
 
 A long read timeout is the cheaper protection — it keeps an ordinary delay from turning into an unknown outcome. `Client(timeout=...)` sets it.
-
----
-
-[← Client](client.md) · [Index](README.md) · [Receiving updates →](receiving.md)

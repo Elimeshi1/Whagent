@@ -1,0 +1,97 @@
+site_name: whagent
+site_description: A Python library for the WhatsApp Agent Platform API
+site_url: https://elimeshi1.github.io/Whagent/
+repo_url: https://github.com/Elimeshi1/Whagent
+repo_name: Elimeshi1/Whagent
+edit_uri: edit/main/docs/
+copyright: >
+  whagent is an independent library, not affiliated with or endorsed by WhatsApp.
+
+theme:
+  name: material
+  language: en
+  icon:
+    repo: fontawesome/brands/github
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.action.edit
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+
+nav:
+  - Home: index.md
+  - Start:
+      - Getting started: getting-started.md
+      - Concepts: concepts.md
+  - The two layers:
+      - Agent: agent.md
+      - Client: client.md
+  - Endpoints:
+      - Sending messages: sending.md
+      - Receiving updates: receiving.md
+      - Receipts and typing: receipts.md
+      - Media: media.md
+  - Reference:
+      - Models: models.md
+      - Errors: errors.md
+      - Rate limits: rate-limits.md
+      - Limits and formats: limits.md
+  - Practice:
+      - Recipes: recipes.md
+      - Testing: testing.md
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - tables
+  - toc:
+      permalink: true
+      toc_depth: 3
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.superfences
+  - pymdownx.snippets
+
+plugins:
+  - search
+
+validation:
+  omitted_files: warn
+  absolute_links: warn
+  unrecognized_links: warn
+  anchors: warn
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/Elimeshi1/Whagent
+      name: whagent on GitHub

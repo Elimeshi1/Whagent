@@ -1,7 +1,5 @@
 # Getting started
 
-[← Documentation index](README.md)
-
 ## Install
 
 ```bash
@@ -69,7 +67,3 @@ The recipient is a [participant identifier](concepts.md#3-participant-identifier
 * [Agent](agent.md) — every handler type and what `Context` gives you
 * [Receiving updates](receiving.md) — offsets, the one thing worth understanding properly
 * [Recipes](recipes.md) — persistence, slow work, shutdown
-
----
-
-[← Index](README.md) · [Concepts →](concepts.md)

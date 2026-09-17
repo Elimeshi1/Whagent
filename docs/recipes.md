@@ -1,7 +1,5 @@
 # Recipes
 
-[← Documentation index](README.md)
-
 Patterns for the things a real agent runs into.
 
 ## Contents
@@ -92,7 +90,6 @@ def keep_typing(ctx, every=20):
         done.set()
         thread.join(timeout=1)
 
-
 @agent.on_text
 def slow(ctx):
     with keep_typing(ctx):
@@ -164,7 +161,6 @@ def chunks(text, size=4000):
         cut = cut if cut > size // 2 else size
         yield text[:cut]
         text = text[cut:].lstrip("\n")
-
 
 @agent.on_text
 def long_answer(ctx):
@@ -269,7 +265,3 @@ WantedBy=multi-user.target
 Because the agent polls, it needs no inbound networking and no public hostname — only outbound HTTPS. Run **one instance per token**: a second one takes the poll away from the first.
 
 Point the offset store at a path that survives restarts (`/var/lib/myagent/offset`, or a volume in a container).
-
----
-
-[← Limits and formats](limits.md) · [Index](README.md) · [Testing →](testing.md)

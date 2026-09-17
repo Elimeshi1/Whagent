@@ -1,6 +1,6 @@
 # Media
 
-[← Documentation index](README.md) — `POST` / `GET` / `DELETE /agent/v1/media`
+`POST` / `GET` / `DELETE /agent/v1/media`
 
 Media never travels inside a message. You upload bytes and get an id; a message references that id. Inbound media is the same in reverse.
 
@@ -106,7 +106,3 @@ Deleting what you no longer need is good hygiene when you handle a lot of files;
 | 429 | More than 12 requests per minute **to a single media method** — each has its own counter |
 
 An expired media id is not recoverable: ask the sender to send the file again, or upload it again yourself.
-
----
-
-[← Receipts and typing](receipts.md) · [Index](README.md) · [Models →](models.md)

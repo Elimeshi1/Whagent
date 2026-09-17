@@ -1,7 +1,5 @@
 # Rate limits
 
-[← Documentation index](README.md)
-
 Each method has its own counter over a rolling 60-second window, **per agent**.
 
 | Endpoint | Limit |
@@ -48,7 +46,3 @@ A send every five seconds is the real constraint on a chatty agent. What helps:
 `RateLimitError` is retried automatically with exponential backoff and jitter, honouring `Retry-After` when the API sends one. Inside the poll loop the prior offset is reused, so nothing is lost.
 
 If you catch it yourself, back off exponentially — do not retry immediately in a tight loop.
-
----
-
-[← Errors](errors.md) · [Index](README.md) · [Limits and formats →](limits.md)

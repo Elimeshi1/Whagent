@@ -1,6 +1,6 @@
 # Receiving updates
 
-[← Documentation index](README.md) — `GET /agent/v1/updates`
+`GET /agent/v1/updates`
 
 Inbound messages and delivery receipts arrive through a long poll. The connection stays open until something arrives or the timeout elapses.
 
@@ -124,7 +124,3 @@ Hold the connection open as long as the platform allows (`timeout=25`) to cut th
 | 409 | A newer poll replaced this one | Run one poll at a time per agent |
 | 429 | More than 15 polls per minute | Reuse the offset, back off |
 | 500 | Internal error | Reuse the offset, back off |
-
----
-
-[← Sending messages](sending.md) · [Index](README.md) · [Receipts and typing →](receipts.md)

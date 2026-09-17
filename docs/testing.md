@@ -1,7 +1,5 @@
 # Testing
 
-[← Documentation index](README.md)
-
 ## Testing your handlers
 
 A handler takes a `Context`, so the simplest test builds one and calls the handler — no HTTP at all:
@@ -42,7 +40,6 @@ class FakeResponse:
 
     def iter_content(self, chunk_size=1024):
         yield self.content
-
 
 class FakeSession:
     def __init__(self):
@@ -119,8 +116,4 @@ pip install -e ".[dev]"
 pytest
 ```
 
-120 tests, no network. They assert the exact requests the library builds against the payloads in the developer manual — [`tests/conftest.py`](../tests/conftest.py) has a fuller version of the fake session above, and is a reasonable thing to copy.
-
----
-
-[← Recipes](recipes.md) · [Index](README.md)
+120 tests, no network. They assert the exact requests the library builds against the payloads in the developer manual — [`tests/conftest.py`](https://github.com/Elimeshi1/Whagent/blob/main/tests/conftest.py) has a fuller version of the fake session above, and is a reasonable thing to copy.

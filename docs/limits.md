@@ -1,7 +1,5 @@
 # Limits and formats
 
-[← Documentation index](README.md)
-
 Everything the platform caps, and everything it accepts. The library checks all of it before a request leaves (`validate=True`, the default).
 
 ```python
@@ -130,7 +128,3 @@ Out-of-range values are adjusted, not rejected. Only a non-integer is a 400.
 |---|---|
 | Typing indicator | clears on reply, or after 25 seconds |
 | Rate limits | [see Rate limits](rate-limits.md) |
-
----
-
-[← Rate limits](rate-limits.md) · [Index](README.md) · [Recipes →](recipes.md)

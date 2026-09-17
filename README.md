@@ -24,16 +24,9 @@ pip install -e .
 
 Python 3.9+. The only runtime dependency is `requests`.
 
-## 📚 Documentation
+## Documentation
 
-**[Read the documentation site →](https://claude.ai/artifact/Qy3QSk8i5sB376dQtPoF1a)** · or browse the Markdown pages below.
-
-| | |
-|---|---|
-| **Hosted site** | https://claude.ai/artifact/Qy3QSk8i5sB376dQtPoF1a |
-| **In this repo** | [`docs/`](docs/README.md) |
-
-Organized by topic:
+**https://elimeshi1.github.io/Whagent/** — built from [`docs/`](docs/index.md) with MkDocs Material.
 
 | | |
 |---|---|
@@ -51,6 +44,14 @@ Organized by topic:
 | [Limits and formats](docs/limits.md) | Length caps, sizes, accepted MIME types |
 | [Recipes](docs/recipes.md) | Persistence, slow work, shutdown, deployment |
 | [Testing](docs/testing.md) | Testing an agent without touching the network |
+
+Build the site locally with:
+
+```bash
+pip install -r docs/requirements.txt
+mkdocs serve
+```
+
 
 ## At a glance
 
