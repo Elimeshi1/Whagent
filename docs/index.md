@@ -1,22 +1,7 @@
----
-hide:
-  - navigation
-  - toc
----
+# whagent
 
-<div class="hero" markdown>
-
-# WhatsApp agents, in Python
-
-whagent is a small library for the [WhatsApp Agent Platform](https://www.whatsapp.com/developer/WhatsApp-Agent-Platform-Developer-Manual.pdf). You write a function that answers a message; it handles the API — polling, receipts, media, retries and rate limits.
-
-[Get started](getting-started.md){ .md-button .md-button--primary }
-[How it works](concepts.md){ .md-button }
-[Questions](faq.md){ .md-button }
-
-</div>
-
-<div class="prose" markdown>
+whagent is a Python library for the [WhatsApp Agent Platform](https://www.whatsapp.com/developer/WhatsApp-Agent-Platform-Developer-Manual.pdf) — the API behind the agents you create from WhatsApp's own settings. You write a function that answers a message; the library handles the rest: polling, read receipts, media, retries and rate limits.
+{ .lead }
 
 ```python
 from whagent import Agent
@@ -30,100 +15,54 @@ def echo(ctx):
 agent.run()
 ```
 
-That is a complete, running agent. It polls for your messages, marks them read, shows a typing indicator while your function runs, and sends the reply.
+That is a complete agent. It polls for your messages, marks them read, shows a typing indicator while your function runs, and sends the reply.
+
+## Installation
 
 ```bash
+git clone https://github.com/Elimeshi1/Whagent.git
+cd Whagent
 pip install -e .
 ```
 
-Python 3.9+, one dependency (`requests`).
+Python 3.9 or newer. The only runtime dependency is `requests`.
 
-## The one thing to know first
+## First, the one rule that shapes everything
 
 **An agent talks to exactly one person: the WhatsApp account that created it — you.**
 
-It cannot message anyone else, cannot message your other agents, and cannot post in groups. Think of it as a private assistant in your own chat list, not a bot with an audience. [Why, and what that means →](faq.md)
+It cannot message anyone else, cannot message your other agents, and cannot post in groups. It is a private assistant in your own chat list, not a bot with an audience. [Why, and what follows from it](faq.md).
 
-</div>
+## How this documentation is organized
 
-## Start here
+<div class="sections" markdown>
 
-<div class="grid cards" markdown>
+### Start
 
--   :material-rocket-launch:{ .lg .middle } **Getting started**
+- [Getting started](getting-started.md) — create an agent, get a token, run your first reply
+- [How it works](concepts.md) — polling, offsets and identifiers, in six short pieces
+- [Questions and answers](faq.md) — who it can message, what happens offline, running two agents
 
-    ---
+### Guides
 
-    Create an agent in WhatsApp, get a token, run your first reply.
+- [Sending messages](sending.md) — text, media, captions, quotes, link previews
+- [Receiving messages](receiving.md) — the poll loop, and never missing or repeating one
+- [Files and media](media.md) — download what you are sent, upload what you send back
+- [Receipts and typing](receipts.md) — blue ticks and the typing indicator
 
-    [:octicons-arrow-right-24: Five minutes](getting-started.md)
+### Reference
 
--   :material-lightbulb-on:{ .lg .middle } **How it works**
+- [`Agent`](agent.md) — handlers, `Context`, the run loop
+- [`Client`](client.md) — one method per endpoint
+- [Models](models.md) — what `Message`, `Status` and `Update` carry
+- [Errors](errors.md) — every error code, and what to do about it
+- [Rate limits](rate-limits.md) — the per-method caps and the built-in limiter
+- [Limits and formats](limits.md) — sizes, MIME types, codecs
 
-    ---
+### Practice
 
-    Polling instead of webhooks, why messages have ids, and what stays yours to track.
-
-    [:octicons-arrow-right-24: The model](concepts.md)
-
--   :material-comment-question:{ .lg .middle } **Questions and answers**
-
-    ---
-
-    Who can it message? What if it is offline? Can I run two? Straight answers.
-
-    [:octicons-arrow-right-24: Q&A](faq.md)
-
-</div>
-
-## Do something
-
-<div class="grid cards" markdown>
-
--   :material-send:{ .lg .middle } **Send a message**
-
-    ---
-
-    Text, photos, documents, stickers — with captions, quotes and link previews.
-
-    [:octicons-arrow-right-24: Sending messages](sending.md)
-
--   :material-inbox-arrow-down:{ .lg .middle } **Receive messages**
-
-    ---
-
-    The poll loop, and how to never miss or double-answer a message.
-
-    [:octicons-arrow-right-24: Receiving messages](receiving.md)
-
--   :material-file-download:{ .lg .middle } **Handle files**
-
-    ---
-
-    Download what you are sent, upload what you send back.
-
-    [:octicons-arrow-right-24: Files and media](media.md)
-
--   :material-server:{ .lg .middle } **Run it for real**
-
-    ---
-
-    Surviving restarts, slow work, worker threads, systemd.
-
-    [:octicons-arrow-right-24: Recipes](recipes.md)
-
-</div>
-
-## Look something up
-
-<div class="grid cards" markdown>
-
--   **[`Agent`](agent.md)** — handlers, `Context`, the run loop
--   **[`Client`](client.md)** — one method per endpoint
--   **[Models](models.md)** — what `Message`, `Status` and `Update` carry
--   **[Errors](errors.md)** — every code, and what to do about it
--   **[Rate limits](rate-limits.md)** — 12 sends a minute, and how to live in it
--   **[Limits and formats](limits.md)** — sizes, MIME types, codecs
+- [Recipes](recipes.md) — persistence, slow work, worker threads, deployment
+- [Testing](testing.md) — testing an agent without touching the network
 
 </div>
 

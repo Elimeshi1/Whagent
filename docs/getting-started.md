@@ -118,11 +118,7 @@ The recipient is the identifier from a message you received. Don't hardcode it p
 
 ## Next
 
-<div class="grid cards" markdown>
-
--   **[How it works](concepts.md)** — polling, offsets, ids: the model in six short pieces
--   **[Questions and answers](faq.md)** — who it can message, what happens offline, running two agents
--   **[Sending messages](sending.md)** — every message type, captions, quotes, previews
--   **[Recipes](recipes.md)** — persistence, slow work, threads, running it as a service
-
-</div>
+- [How it works](concepts.md) — polling, offsets, ids: the model in six short pieces
+- [Questions and answers](faq.md) — who it can message, what happens offline, running two agents
+- [Sending messages](sending.md) — every message type, captions, quotes, previews
+- [Recipes](recipes.md) — persistence, slow work, threads, running it as a service

@@ -14,14 +14,12 @@ theme:
   favicon: assets/favicon.svg
   icon:
     repo: fontawesome/brands/github
-  font:
-    text: Public Sans
-    code: JetBrains Mono
+  font: false
   features:
-    - navigation.tabs
     - navigation.instant
     - navigation.tracking
     - navigation.sections
+    - navigation.expand
     - navigation.top
     - navigation.footer
     - toc.follow

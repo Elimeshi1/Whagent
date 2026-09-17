@@ -1,167 +1,281 @@
-/* whagent documentation — palette, typography and landing page.
-   Material exposes its design tokens as CSS variables; everything below
-   redefines those rather than fighting the theme's own rules. */
+/* whagent documentation.
+
+   The look follows Furo (the Sphinx theme behind Pyrogram's docs): a quiet
+   grey sidebar panel, no coloured chrome, system typography, a single blue
+   accent, and a narrow content column. The values below are Furo's own
+   design tokens, mapped onto the variables this theme exposes. */
+
+:root {
+  --furo-fg:            #000000;
+  --furo-fg-secondary:  #5a5c63;
+  --furo-fg-muted:      #6b6f76;
+  --furo-bg:            #ffffff;
+  --furo-bg-secondary:  #f8f9fb;
+  --furo-bg-hover:      #efeff4;
+  --furo-border:        #eeebee;
+  --furo-brand:         #0a4bff;
+  --furo-brand-content: #2757dd;
+
+  --md-text-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --md-code-font-family: "SFMono-Regular", Menlo, Consolas, Monaco, "Liberation Mono", monospace;
+}
+
+[data-md-color-scheme="slate"] {
+  --furo-fg:            #cfd0d0;
+  --furo-fg-secondary:  #9ca0a5;
+  --furo-fg-muted:      #81868d;
+  --furo-bg:            #131416;
+  --furo-bg-secondary:  #1a1c1e;
+  --furo-bg-hover:      #1e2124;
+  --furo-border:        #303335;
+  --furo-brand:         #3d94ff;
+  --furo-brand-content: #5ca5ff;
+}
 
 /* ---------- palette ---------- */
 
 [data-md-color-primary="custom"] {
-  --md-primary-fg-color:        #103126;
-  --md-primary-fg-color--light: #1B4B3B;
-  --md-primary-fg-color--dark:  #09201A;
-  --md-primary-bg-color:        #FFFFFF;
-  --md-primary-bg-color--light: rgba(255, 255, 255, .72);
+  --md-primary-fg-color:        var(--furo-bg);
+  --md-primary-fg-color--light: var(--furo-bg);
+  --md-primary-fg-color--dark:  var(--furo-bg);
+  --md-primary-bg-color:        var(--furo-fg);
+  --md-primary-bg-color--light: var(--furo-fg-secondary);
 }
 
 [data-md-color-accent="custom"] {
-  --md-accent-fg-color:             #0B7A50;
-  --md-accent-fg-color--transparent: rgba(11, 122, 80, .1);
+  --md-accent-fg-color:              var(--furo-brand-content);
+  --md-accent-fg-color--transparent: var(--furo-bg-hover);
 }
 
-/* Light: a warm-neutral ground rather than flat white, and a green link. */
-[data-md-color-scheme="default"] {
-  --md-default-bg-color:      #FCFDFC;
-  --md-typeset-a-color:       #0B7A50;
-  --md-code-bg-color:         #F1F5F2;
-  --md-code-fg-color:         #16302A;
-  --md-typeset-mark-color:    #D8F0E3;
-  --md-footer-bg-color:       #103126;
-  --md-footer-bg-color--dark: #09201A;
-}
-
-/* Dark: a green-biased ink, not the theme's default blue-grey. */
+[data-md-color-scheme="default"],
 [data-md-color-scheme="slate"] {
-  --md-hue: 160;
-  --md-default-bg-color:        #0C1512;
-  --md-default-fg-color:        #E4EDE8;
-  --md-default-fg-color--light: #B3C4BB;
-  --md-typeset-a-color:         #45D693;
-  --md-code-bg-color:           #121D18;
-  --md-code-fg-color:           #DDE8E2;
-  --md-footer-bg-color:         #09100D;
-  --md-footer-bg-color--dark:   #060A08;
+  --md-default-bg-color:            var(--furo-bg);
+  --md-default-fg-color:            var(--furo-fg);
+  --md-default-fg-color--light:     var(--furo-fg-secondary);
+  --md-default-fg-color--lighter:   var(--furo-fg-muted);
+  --md-default-fg-color--lightest:  var(--furo-border);
+  --md-typeset-a-color:             var(--furo-brand-content);
+  --md-code-bg-color:               var(--furo-bg-secondary);
+  --md-code-fg-color:               var(--furo-fg);
+  --md-footer-bg-color:             var(--furo-bg-secondary);
+  --md-footer-bg-color--dark:       var(--furo-bg-secondary);
+  --md-footer-fg-color:             var(--furo-fg);
+  --md-footer-fg-color--light:      var(--furo-fg-muted);
+  --md-footer-fg-color--lighter:    var(--furo-fg-muted);
 }
-[data-md-color-scheme="slate"][data-md-color-primary="custom"] {
-  --md-primary-fg-color: #0E2A21;
+
+/* ---------- header: flat, not a coloured bar ---------- */
+
+.md-header {
+  background: var(--furo-bg);
+  color: var(--furo-fg);
+  box-shadow: none;
+  border-bottom: 1px solid var(--furo-border);
 }
-[data-md-color-scheme="slate"][data-md-color-accent="custom"] {
-  --md-accent-fg-color: #45D693;
+.md-header__title { font-weight: 600; font-size: .82rem; }
+.md-header[data-md-state="shadow"] { box-shadow: none; }
+.md-search__form {
+  background: var(--furo-bg-secondary);
+  border: 1px solid var(--furo-border);
+  border-radius: .2rem;
+  height: 1.5rem;
+}
+.md-search__form:hover { background: var(--furo-bg-secondary); }
+.md-search__input { font-size: .7rem; }
+.md-search__input::placeholder { color: var(--furo-fg-muted); }
+[data-md-toggle="search"]:checked ~ .md-header .md-search__form { background: var(--furo-bg); }
+
+/* ---------- sidebar: a quiet full-height panel ---------- */
+
+@media screen and (min-width: 76.25em) {
+  .md-sidebar--primary {
+    background: var(--furo-bg-secondary);
+    border-right: 1px solid var(--furo-border);
+    height: calc(100vh - 2.4rem);
+    padding: 1.2rem 0 0;
+    width: 13rem;
+  }
+  .md-sidebar--primary .md-sidebar__scrollwrap {
+    height: calc(100% - 1.2rem);
+    max-height: none;
+    margin: 0;
+  }
+  .md-sidebar--secondary { width: 11rem; }
+  .md-content { max-width: 46rem; }
+  .md-main__inner { justify-content: flex-start; }
+}
+
+.md-nav {
+  font-size: .7rem;
+  line-height: 1.5;
+}
+.md-nav--primary > .md-nav__title {
+  background: transparent;
+  box-shadow: none;
+  padding: 0 .6rem .4rem;
+  height: auto;
+  line-height: 1.4;
+}
+.md-nav__title {
+  font-size: .62rem;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--furo-fg-muted);
+  padding-bottom: .4rem;
+}
+.md-nav__link {
+  color: var(--furo-fg-secondary);
+  margin-top: .1rem;
+  padding: .18rem .6rem;
+  border-radius: .15rem;
+}
+.md-nav__link:hover { background: var(--furo-bg-hover); color: var(--furo-fg); }
+.md-nav__link--active,
+.md-nav__item .md-nav__link--active {
+  color: var(--furo-brand);
+  font-weight: 600;
+}
+.md-nav--secondary .md-nav__link--active { background: none; }
+.md-nav__item--section > .md-nav__link {
+  font-size: .62rem;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--furo-fg-muted);
+  margin-top: .8rem;
+}
+.md-nav__item--section > .md-nav__link:hover { background: none; color: var(--furo-fg-muted); }
+
+/* table of contents */
+.md-sidebar--secondary .md-nav {
+  font-size: .64rem;
+}
+.md-sidebar--secondary .md-nav__title {
+  font-size: .58rem;
 }
 
 /* ---------- typography ---------- */
 
 .md-typeset {
-  font-size: .78rem;
-  line-height: 1.68;
+  font-size: .76rem;
+  line-height: 1.7;
+  color: var(--furo-fg-secondary);
+}
+.md-typeset h1, .md-typeset h2, .md-typeset h3,
+.md-typeset h4, .md-typeset strong, .md-typeset b {
+  color: var(--furo-fg);
 }
 .md-typeset h1 {
-  font-weight: 640;
-  letter-spacing: -.02em;
-  color: var(--md-default-fg-color);
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -.01em;
+  margin: 0 0 .8rem;
 }
 .md-typeset h2 {
-  font-weight: 620;
-  letter-spacing: -.012em;
-  margin-top: 2.2em;
-  padding-top: .5em;
-  border-top: 1px solid var(--md-default-fg-color--lightest);
+  font-size: 1.15rem;
+  font-weight: 650;
+  line-height: 1.3;
+  margin: 2rem 0 .7rem;
+  letter-spacing: -.005em;
 }
-.md-typeset h3 { font-weight: 600; letter-spacing: -.008em; }
-.md-typeset code { font-size: .86em; border-radius: 3px; }
-.md-typeset table:not([class]) th { font-weight: 600; }
-.md-typeset table:not([class]) { font-size: .72rem; }
+.md-typeset h3 { font-size: .95rem; font-weight: 600; margin-top: 1.5rem; }
+.md-typeset h4 { font-size: .82rem; font-weight: 600; }
+.md-typeset a { text-decoration: none; }
+.md-typeset a:hover { text-decoration: underline; }
 
-/* The endpoint under a page title, written as `GET /agent/v1/updates`. */
-.md-typeset h1 + p > code:only-child {
-  display: inline-block;
-  margin-bottom: .4em;
-  padding: .24em .6em;
-  font-size: .76em;
-  letter-spacing: .02em;
-  color: var(--md-accent-fg-color);
-  background: var(--md-accent-fg-color--transparent);
-  border-radius: 4px;
-}
+/* ---------- code ---------- */
 
-/* ---------- landing page ---------- */
+.md-typeset code {
+  font-size: .82em;
+  background: var(--furo-bg-secondary);
+  border-radius: .15rem;
+  padding: .1em .3em;
+  color: var(--furo-fg);
+}
+.md-typeset pre > code {
+  font-size: .68rem;
+  line-height: 1.6;
+  padding: .7rem .9rem;
+  border-radius: .2rem;
+}
+.md-typeset .highlight {
+  border: 1px solid var(--furo-border);
+  border-radius: .2rem;
+  margin: 1em 0;
+}
+.md-typeset .highlight pre { margin: 0; }
+.md-typeset .highlight code { background: var(--furo-bg-secondary); }
+.md-clipboard { color: var(--furo-fg-muted); }
+.md-clipboard:hover { color: var(--furo-brand-content); }
 
-.hero {
-  margin: 0 0 2.4rem;
-}
-.hero h1 {
-  font-size: 2.1rem;
-  line-height: 1.12;
-  font-weight: 680;
-  letter-spacing: -.028em;
-  margin: 0 0 .5rem;
-  max-width: 18ch;
-}
-.hero > p:first-of-type {
-  font-size: .94rem;
-  line-height: 1.55;
-  color: var(--md-default-fg-color--light);
-  max-width: 54ch;
-  margin: 0 0 1.2rem;
-}
-.hero .actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: .6rem;
-  margin-bottom: 1.6rem;
-}
-.md-typeset .hero .actions .md-button {
-  margin: 0;
-}
+/* ---------- tables, admonitions, footer ---------- */
 
-/* Material's grid cards, tightened up. */
-.md-typeset .grid.cards > ul > li {
-  border-radius: .5rem;
-  border-color: var(--md-default-fg-color--lightest);
-  transition: border-color .2s, box-shadow .2s;
-}
-.md-typeset .grid.cards > ul > li:hover {
-  border-color: var(--md-accent-fg-color);
+.md-typeset table:not([class]) {
+  font-size: .68rem;
+  border: 1px solid var(--furo-border);
+  border-radius: .2rem;
   box-shadow: none;
 }
-.md-typeset .grid.cards > ul > li > hr {
-  margin: .6em 0;
+.md-typeset table:not([class]) th {
+  background: var(--furo-bg-secondary);
+  color: var(--furo-fg);
+  font-weight: 600;
 }
-.md-typeset .grid.cards > ul > li p:last-child {
-  margin-bottom: 0;
+.md-typeset table:not([class]) td { border-top: 1px solid var(--furo-border); }
+
+.md-typeset .admonition, .md-typeset details {
+  font-size: .72rem;
+  border: none;
+  border-left: .15rem solid;
+  border-radius: .15rem;
+  background: var(--furo-bg-secondary);
+  box-shadow: none;
+}
+.md-typeset .admonition-title, .md-typeset summary {
+  font-weight: 600;
+  background: transparent;
 }
 
-/* A quiet label above a section, e.g. "Ask a question". */
-.md-typeset .eyebrow {
+.md-footer {
+  background: var(--furo-bg);
+  border-top: 1px solid var(--furo-border);
+  color: var(--furo-fg-secondary);
+}
+.md-footer-meta {
+  background: var(--furo-bg);
+  font-size: .62rem;
+}
+.md-footer__link { opacity: .9; }
+.md-copyright { color: var(--furo-fg-muted); }
+
+/* ---------- landing ---------- */
+
+.md-typeset .lead {
+  font-size: .86rem;
+  line-height: 1.6;
+  color: var(--furo-fg-secondary);
+}
+.md-typeset .sections {
+  columns: 2 14rem;
+  column-gap: 2rem;
+}
+.md-typeset .sections h3 {
+  break-after: avoid;
+  page-break-after: avoid;
+}
+.md-typeset .sections ul {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+.md-typeset .sections h3 {
   font-size: .68rem;
   font-weight: 600;
-  letter-spacing: .1em;
+  letter-spacing: .06em;
   text-transform: uppercase;
-  color: var(--md-accent-fg-color);
-  margin-bottom: .3em;
+  color: var(--furo-fg-muted);
+  margin: 1.2rem 0 .4rem;
 }
-
-/* ---------- misc ---------- */
-
-.md-header__title { font-weight: 600; }
-.md-nav__title { font-weight: 600; }
-.md-typeset .admonition, .md-typeset details { border-radius: .4rem; font-size: .74rem; }
-.md-footer-meta { font-size: .7rem; }
-
-/* ---------- landing width ---------- */
-
-/* The home page hides both sidebars, so a column left to itself would run the
-   full width of a desktop screen. Prose is capped at a readable measure while
-   the card grids below it stay full width. */
-.md-typeset .hero,
-.md-typeset .prose {
-  max-width: 47rem;
-}
-
-/* Cards that are a plain link list ("Look something up") sit tighter. */
-.md-typeset .grid.cards > ul > li > p:only-child {
-  margin: 0;
-}
-
-/* Mermaid diagrams: give them room and centre them. */
-.md-typeset .mermaid {
-  margin: 1.2em 0;
-}
+.md-typeset .sections ul { margin: 0 0 .6rem; }
+.md-typeset .mermaid { margin: 1.2em 0; }
